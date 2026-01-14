@@ -7,6 +7,7 @@ public class Doctor {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Column(nullable = false)
     private String name;
     @Column(nullable = false, unique = true, updatable = false)
     private String mail;
@@ -18,6 +19,17 @@ public class Doctor {
     private Speciality speciality;
     @Embedded
     private Address address;
+
+    public Doctor(){}
+
+    public Doctor(DoctorRegistrationData data) {
+        this.name = data.name();
+        this.mail = data.mail();
+        this.phone = data.phone();
+        this.crm = data.crm();
+        this.speciality = data.speciality();
+        this.address = data.address();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

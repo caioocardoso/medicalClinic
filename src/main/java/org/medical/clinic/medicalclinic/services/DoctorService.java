@@ -3,6 +3,7 @@ package org.medical.clinic.medicalclinic.services;
 import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.DoctorDTO;
 import org.medical.clinic.medicalclinic.models.Doctor;
+import org.medical.clinic.medicalclinic.models.DoctorRegistrationData;
 import org.medical.clinic.medicalclinic.repositories.DoctorRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +17,10 @@ public class DoctorService {
         this.repository = repository;
     }
 
-    public DoctorDTO newDoctor(@Valid DoctorDTO dto){
-        Doctor entity = new Doctor();
-        entity.setName(dto.getName());
-        entity.setMail(dto.getMail());
-        entity.setPhone(dto.getPhone());
-        entity.setCrm(dto.getCrm());
-        entity.setSpeciality(dto.getSpeciality());
-        entity.setAddress(dto.getAddress());
-        Doctor saved = repository.save(entity);
-        dto.setId(saved.getId());
-        return dto;
+    public DoctorDTO newDoctor(@Valid DoctorRegistrationData data){
+        Doctor doctor = new Doctor(data);
+        Doctor saved = repository.save(doctor);
+        return new DoctorDTO(saved);
     }
 
     public List<DoctorDTO> getAllDoctors(){

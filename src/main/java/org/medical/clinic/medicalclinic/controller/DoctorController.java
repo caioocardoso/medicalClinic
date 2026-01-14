@@ -1,6 +1,7 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import org.medical.clinic.medicalclinic.DTO.DoctorDTO;
+import org.medical.clinic.medicalclinic.models.DoctorRegistrationData;
 import org.medical.clinic.medicalclinic.services.DoctorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,7 +23,7 @@ public class DoctorController {
     }
 
     @PostMapping
-    public ResponseEntity<DoctorDTO> newDoctor(@Valid @RequestBody DoctorDTO newDoctor) {
+    public ResponseEntity<DoctorDTO> newDoctor(@Valid @RequestBody DoctorRegistrationData newDoctor) {
         DoctorDTO saved = service.newDoctor(newDoctor);
         return ResponseEntity.status(201).body(saved);
     }

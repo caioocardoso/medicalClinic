@@ -2,6 +2,7 @@ package org.medical.clinic.medicalclinic.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 import org.medical.clinic.medicalclinic.models.Address;
+import org.medical.clinic.medicalclinic.models.Doctor;
 import org.medical.clinic.medicalclinic.models.Speciality;
 
 public class DoctorDTO {
@@ -9,11 +10,25 @@ public class DoctorDTO {
 
     @NotBlank
     private String name;
+    @NotBlank
     private String mail;
+    @NotBlank
     private String phone;
     private String crm;
+    @NotBlank
     private Speciality speciality;
     private Address address;
+
+    public DoctorDTO(){}
+    public DoctorDTO(Doctor doctor) {
+        this.id = doctor.getId();
+        this.name = doctor.getName();
+        this.mail = doctor.getMail();
+        this.phone = doctor.getPhone();
+        this.crm = doctor.getCrm();
+        this.speciality = doctor.getSpeciality();
+        this.address = doctor.getAddress();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

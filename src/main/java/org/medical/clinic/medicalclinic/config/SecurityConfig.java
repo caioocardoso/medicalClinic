@@ -22,7 +22,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/medico/**").permitAll()
+                        .requestMatchers("/medico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());
