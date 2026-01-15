@@ -1,6 +1,7 @@
 package org.medical.clinic.medicalclinic.DTO;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.medical.clinic.medicalclinic.models.Address;
 import org.medical.clinic.medicalclinic.models.Doctor;
 import org.medical.clinic.medicalclinic.models.Speciality;
@@ -15,7 +16,7 @@ public class DoctorDTO {
     private String phone;
     @NotBlank
     private String crm;
-    @NotBlank
+    @NotNull
     private Speciality speciality;
     private Address address;
 

@@ -19,6 +19,8 @@ public class Doctor {
     private Speciality speciality;
     @Embedded
     private Address address;
+    @Column(nullable = false)
+    private boolean active = true;
 
     public Doctor(){}
 
@@ -45,5 +47,6 @@ public class Doctor {
     public void setSpeciality(Speciality speciality) { this.speciality = speciality; }
     public Address getAddress() { return address; }
     public void setAddress(Address address) { this.address = address; }
-
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 }
