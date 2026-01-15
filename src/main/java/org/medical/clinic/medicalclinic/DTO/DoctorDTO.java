@@ -12,8 +12,8 @@ public class DoctorDTO {
     private String name;
     @NotBlank
     private String mail;
-    @NotBlank
     private String phone;
+    @NotBlank
     private String crm;
     @NotBlank
     private Speciality speciality;

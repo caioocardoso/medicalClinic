@@ -9,9 +9,9 @@ import jakarta.validation.constraints.Pattern;
 public record DoctorRegistrationData(
         @NotBlank String name,
         @NotBlank @Email String mail,
-        @NotBlank String phone,
+        String phone,
         @NotBlank String crm,
         @NotNull Speciality speciality,
-        @NotNull @Valid Address address
+        @NotNull @Valid AddressData address
 ) {
 }

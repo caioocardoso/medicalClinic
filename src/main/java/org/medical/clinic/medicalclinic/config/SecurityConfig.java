@@ -2,6 +2,7 @@ package org.medical.clinic.medicalclinic.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,7 +23,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/medico").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/medico").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/medico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());

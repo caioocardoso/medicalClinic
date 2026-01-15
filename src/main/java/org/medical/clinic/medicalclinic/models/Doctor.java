@@ -28,7 +28,7 @@ public class Doctor {
         this.phone = data.phone();
         this.crm = data.crm();
         this.speciality = data.speciality();
-        this.address = data.address();
+        this.address = new Address(data.address());
     }
 
     public Long getId() { return id; }
