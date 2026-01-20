@@ -1,9 +1,9 @@
-package org.medical.clinic.medicalclinic.models;
+package org.medical.clinic.medicalclinic.DTO;
 
 import jakarta.validation.Valid;
 
 public record DoctorUpdateData (
         String name,
         String phone,
-        @Valid AddressData address
+        @Valid AddressRegistrationData address
 ){}

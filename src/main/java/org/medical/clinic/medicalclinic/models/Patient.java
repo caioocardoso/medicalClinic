@@ -4,10 +4,10 @@ import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.PatientRegistrationData;
 
 @Entity
-public class Doctor {
+public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -22,11 +22,7 @@ public class Doctor {
     private String phone;
     @Column(nullable = false, unique = true, updatable = false)
     @NotBlank
-    private String crm;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @NotNull
-    private Speciality speciality;
+    private String cpf;
     @Embedded
     @NotNull
     @Valid
@@ -34,14 +30,13 @@ public class Doctor {
     @Column(nullable = false)
     private boolean active = true;
 
-    public Doctor(){}
+    public Patient(){}
 
-    public Doctor(DoctorRegistrationData data) {
+    public Patient(PatientRegistrationData data) {
         this.name = data.name();
         this.email = data.email();
         this.phone = data.phone();
-        this.crm = data.crm();
-        this.speciality = data.speciality();
+        this.cpf = data.cpf();
         this.address = new Address(data.address());
     }
 
@@ -53,10 +48,8 @@ public class Doctor {
     public void setEmail(String email) { this.email = email; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
-    public String getCrm() { return crm; }
-    public void setCrm(String crm) { this.crm = crm; }
-    public Speciality getSpeciality() { return speciality; }
-    public void setSpeciality(Speciality speciality) { this.speciality = speciality; }
+    public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
     public Address getAddress() { return address; }
     public void setAddress(Address address) { this.address = address; }
     public boolean isActive() { return active; }

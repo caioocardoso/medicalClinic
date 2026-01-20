@@ -4,16 +4,14 @@ import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.DoctorDTO;
 import org.medical.clinic.medicalclinic.models.Address;
 import org.medical.clinic.medicalclinic.models.Doctor;
-import org.medical.clinic.medicalclinic.models.DoctorRegistrationData;
-import org.medical.clinic.medicalclinic.models.DoctorUpdateData;
+import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.DoctorUpdateData;
 import org.medical.clinic.medicalclinic.repositories.DoctorRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @Service
 public class DoctorService {
@@ -51,10 +49,11 @@ public class DoctorService {
         return repository.findAllByActiveTrue(pageable).map(DoctorDTO::new);
     }
 
-    public void deleteDoctor(Long id) {
+    public DoctorDTO deleteDoctor(Long id) {
         Doctor doctor = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
         doctor.setActive(false);
-        repository.save(doctor);
+        Doctor saved = repository.save(doctor);
+        return new DoctorDTO(saved);
     }
 }

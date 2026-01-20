@@ -1,8 +1,9 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import org.medical.clinic.medicalclinic.DTO.DoctorDTO;
-import org.medical.clinic.medicalclinic.models.DoctorRegistrationData;
-import org.medical.clinic.medicalclinic.models.DoctorUpdateData;
+import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.DoctorUpdateData;
+import org.medical.clinic.medicalclinic.DTO.PatientDTO;
 import org.medical.clinic.medicalclinic.services.DoctorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,8 +14,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/medico")
@@ -27,7 +26,7 @@ public class DoctorController {
     }
 
     @PostMapping
-    public ResponseEntity<DoctorDTO> newDoctor(@Valid @RequestBody DoctorRegistrationData newDoctor) {
+    public ResponseEntity<DoctorDTO> newDoctor(@RequestBody @Valid DoctorRegistrationData newDoctor) {
         DoctorDTO saved = service.newDoctor(newDoctor);
         return ResponseEntity.status(201).body(saved);
     }
@@ -46,8 +45,8 @@ public class DoctorController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDoctor(@PathVariable Long id){
-        service.deleteDoctor(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<DoctorDTO> deleteDoctor(@PathVariable Long id){
+        DoctorDTO deleted = service.deleteDoctor(id);
+        return ResponseEntity.ok(deleted);
     }
 }

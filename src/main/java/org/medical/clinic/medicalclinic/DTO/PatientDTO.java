@@ -2,28 +2,25 @@ package org.medical.clinic.medicalclinic.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.medical.clinic.medicalclinic.models.Address;
 import org.medical.clinic.medicalclinic.models.Doctor;
+import org.medical.clinic.medicalclinic.models.Patient;
 import org.medical.clinic.medicalclinic.models.Speciality;
 
-public class DoctorDTO {
+public class PatientDTO {
     private Long id;
     @NotBlank
     private String name;
     @NotBlank
     private String email;
     @NotBlank
-    private String crm;
-    @NotNull
-    private Speciality speciality;
+    private String cpf;
 
-    public DoctorDTO(){}
-    public DoctorDTO(Doctor doctor) {
-        this.id = doctor.getId();
-        this.name = doctor.getName();
-        this.email = doctor.getEmail();
-        this.crm = doctor.getCrm();
-        this.speciality = doctor.getSpeciality();
+    public PatientDTO(){}
+    public PatientDTO(Patient patient) {
+        this.id = patient.getId();
+        this.name = patient.getName();
+        this.email = patient.getEmail();
+        this.cpf = patient.getCpf();
     }
 
     public Long getId() { return id; }
@@ -32,8 +29,6 @@ public class DoctorDTO {
     public void setName(String name) { this.name = name; }
     public String getEmail() { return email; }
     public void setEmail(String mail) { this.email = mail; }
-    public String getCrm() { return crm; }
-    public void setCrm(String crm) { this.crm = crm; }
-    public Speciality getSpeciality() { return speciality; }
-    public void setSpeciality(Speciality speciality) { this.speciality = speciality; }
+    public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
 }
