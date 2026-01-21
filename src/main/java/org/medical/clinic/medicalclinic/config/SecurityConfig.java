@@ -25,6 +25,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/medico/**").permitAll()
                         .requestMatchers("/paciente/**").permitAll()
+                        .requestMatchers("/consulta/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());
