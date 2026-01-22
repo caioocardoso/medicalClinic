@@ -21,7 +21,11 @@ public class Appointment {
     @Column(nullable = false)
     private int durationInMinutes = 60;
     @Column(nullable = false)
-    private Enum status = AppointmentStatus.SCHEDULED;
+    @Enumerated(EnumType.STRING)
+    private AppointmentStatus status = AppointmentStatus.SCHEDULED;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private CancellationReason cancellationReason;
 
     public Appointment() {
     }
@@ -74,5 +78,26 @@ public class Appointment {
 
     public void setDurationInMinutes(int durationInMinutes) {
         this.durationInMinutes = durationInMinutes;
+    }
+
+    public AppointmentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AppointmentStatus status) {
+        this.status = status;
+    }
+
+    public CancellationReason getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(CancellationReason cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public void cancel(CancellationReason reason) {
+        this.status = AppointmentStatus.CANCELLED;
+        this.cancellationReason = reason;
     }
 }

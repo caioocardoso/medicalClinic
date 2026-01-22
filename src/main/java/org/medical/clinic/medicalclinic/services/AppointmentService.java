@@ -79,4 +79,49 @@ public class AppointmentService {
         Appointment saved = appointmentRepository.save(newAppointment);
         return new AppointmentDTO(saved);
     }
+
+    public List<AppointmentDTO> getAllAppointments() {
+        List<Appointment> appointments = appointmentRepository.findAll();
+        return appointments.stream().map(AppointmentDTO::new).toList();
+    }
+
+    public AppointmentDTO getAppointmentById(Long id) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
+        return new AppointmentDTO(appointment);
+    }
+
+    public List<AppointmentDTO> getPatientAppointments(Long patientId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
+
+        if(!patient.isActive())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inactive patient has no appointments");
+
+        List<Appointment> appointments = appointmentRepository.findByPatient(patient);
+        return appointments.stream().map(AppointmentDTO::new).toList();
+    }
+
+    public void cancel(AppointmentCancellationRequest cancellation) {
+        if (cancellation.appointmentId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment ID is required");
+        }
+
+        Appointment appointment = appointmentRepository.findById(cancellation.appointmentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment is already cancelled");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime appointmentTime = appointment.getStartDateTime();
+
+        if (now.plusHours(24).isAfter(appointmentTime)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointments can only be cancelled with at least 24 hours notice");
+        }
+
+        appointment.cancel(cancellation.reason());
+        appointmentRepository.save(appointment);
+    }
 }

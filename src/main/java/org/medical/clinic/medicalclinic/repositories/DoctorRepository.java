@@ -21,8 +21,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
                     "AND NOT EXISTS ( " +
                     "  SELECT 1 FROM appointment a " +
                     "  WHERE a.doctor_id = d.id " +
-                    "    AND a.date_time < :end " +
-                    "    AND (a.date_time + interval '1 hour') > :start " +
+                    "    AND a.start_date_time < :end " +
+                    "    AND a.end_date_time > :start " +
                     ") " +
                     "ORDER BY random() LIMIT 1",
             nativeQuery = true)

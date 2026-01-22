@@ -31,7 +31,7 @@ public class DoctorDTO {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getEmail() { return email; }
-    public void setEmail(String mail) { this.email = mail; }
+    public void setEmail(String email) { this.email = email; }
     public String getCrm() { return crm; }
     public void setCrm(String crm) { this.crm = crm; }
     public Speciality getSpeciality() { return speciality; }
