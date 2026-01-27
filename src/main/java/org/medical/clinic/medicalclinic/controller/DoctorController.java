@@ -5,6 +5,7 @@ import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
 import org.medical.clinic.medicalclinic.DTO.DoctorUpdateData;
 import org.medical.clinic.medicalclinic.DTO.PatientDTO;
 import org.medical.clinic.medicalclinic.services.DoctorService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,21 +20,12 @@ import jakarta.validation.Valid;
 @RequestMapping("/medico")
 @Validated
 public class DoctorController {
+    @Autowired
     DoctorService service;
-
-    public DoctorController(DoctorService service) {
-        this.service = service;
-    }
-
-    @PostMapping
-    public ResponseEntity<DoctorDTO> newDoctor(@RequestBody @Valid DoctorRegistrationData newDoctor) {
-        DoctorDTO saved = service.newDoctor(newDoctor);
-        return ResponseEntity.status(201).body(saved);
-    }
 
     @GetMapping
     public ResponseEntity<Page<DoctorDTO>> getAllDoctors(
-            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "user.name", direction = Sort.Direction.ASC) Pageable pageable) {
         Page<DoctorDTO> doctors = service.getAllDoctors(pageable);
         return ResponseEntity.ok(doctors);
     }

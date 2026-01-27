@@ -3,6 +3,7 @@ package org.medical.clinic.medicalclinic.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
+import org.medical.clinic.medicalclinic.DTO.RegisterDTO;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,9 +17,18 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String login;
+
+    @Column(unique = true, nullable = false, updatable = false)
+    private String email;
+
     private String password;
-    @ElementCollection(fetch = FetchType.EAGER)
+    private String name;
+    private String phone;
+
+    @Embedded
+    private Address address;
+
+    @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
@@ -26,9 +36,12 @@ public class User implements UserDetails {
 
     public User(){}
 
-    public User(@NotBlank String login, String hashedPassword) {
-        this.login = login;
+    public User(RegisterDTO data, String hashedPassword) {
         this.password = hashedPassword;
+        this.name = data.name();
+        this.email = data.email();
+        this.phone = data.phone();
+        this.address = new Address(data.address());
     }
 
     @Override
@@ -55,17 +68,13 @@ public class User implements UserDetails {
     }
 
     @Override
-    public String getUsername() {
-        return login;
-    }
-
-    public void setUsername(String login) {
-        this.login = login;
+    public @Nullable String getPassword() {
+        return password;
     }
 
     @Override
-    public @Nullable String getPassword() {
-        return password;
+    public String getUsername() {
+        return email;
     }
 
     public void setPassword(String password) {
@@ -94,6 +103,38 @@ public class User implements UserDetails {
 
     public Set<RoleType> getRoles() {
         return roleTypes;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     public void setRoles(Set<RoleType> roleTypes) {

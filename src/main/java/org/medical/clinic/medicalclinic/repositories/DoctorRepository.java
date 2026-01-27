@@ -15,17 +15,29 @@ import java.util.Optional;
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Page<Doctor> findAllByActiveTrue(Pageable pageable);
 
-    @Query(value =
-            "SELECT d.* FROM doctor d " +
-                    "WHERE d.active = TRUE " +
-                    "AND NOT EXISTS ( " +
-                    "  SELECT 1 FROM appointment a " +
-                    "  WHERE a.doctor_id = d.id " +
-                    "    AND a.start_date_time < :end " +
-                    "    AND a.end_date_time > :start " +
-                    ") " +
-                    "ORDER BY random() LIMIT 1",
-            nativeQuery = true)
-    Optional<Doctor> findRandomAvailableDoctor(@Param("start") LocalDateTime start,
-                                               @Param("end") LocalDateTime end);
+    @Query("""
+            SELECT count(d) FROM Doctor d
+            WHERE d.active = TRUE
+            AND NOT EXISTS (
+                SELECT 1 FROM Appointment a
+                WHERE a.doctor = d
+                AND a.startDateTime < :end
+                AND a.endDateTime > :start
+            )
+            """)
+    Long countAvailableDoctors(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("""
+            SELECT d FROM Doctor d
+            WHERE d.active = TRUE
+            AND NOT EXISTS (
+                SELECT 1 FROM Appointment a
+                WHERE a.doctor = d
+                AND a.startDateTime < :end
+                AND a.endDateTime > :start
+            )
+            """)
+    Page<Doctor> findAvailableDoctors(@Param("start") LocalDateTime start,
+                                      @Param("end") LocalDateTime end,
+                                      Pageable pageable);
 }

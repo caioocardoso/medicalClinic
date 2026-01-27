@@ -10,6 +10,7 @@ import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AuthenticationService;
 import org.medical.clinic.medicalclinic.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,8 +32,9 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginDTO loginDTO) {
-        var usernamePassword = new UsernamePasswordAuthenticationToken(loginDTO.login(), loginDTO.password());
+        var usernamePassword = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
+
         var token = tokenService.generateToken((User) auth.getPrincipal());
         return ResponseEntity.ok(new TokenDTO(token));
     }
@@ -39,19 +42,16 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody @Valid RegisterDTO data) {
         User savedUser = authenticationService.register(data, RoleType.ROLE_PATIENT);
-        if (savedUser == null) return ResponseEntity.badRequest().build();
         return ResponseEntity.ok(new UserDTO(savedUser));
     }
 
     @PostMapping("/register/admin")
     public ResponseEntity<UserDTO> registerAdmin(@RequestBody @Valid RegisterDTO data) {
         if (data.role() == null) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role is required to Admin register");
         }
 
         User savedUser = authenticationService.register(data, data.role());
-
-        if(savedUser == null) return ResponseEntity.badRequest().build();
         return ResponseEntity.ok(new UserDTO(savedUser));
     }
 }

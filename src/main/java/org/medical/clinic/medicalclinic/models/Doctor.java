@@ -9,56 +9,35 @@ import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
 @Entity
 public class Doctor {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
-    @NotBlank
-    private String name;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    private User user;
+
     @Column(nullable = false, unique = true, updatable = false)
-    @NotBlank
-    private String email;
-    @Column(nullable = false)
-    @NotBlank
-    private String phone;
-    @Column(nullable = false, unique = true, updatable = false)
-    @NotBlank
     private String crm;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @NotNull
     private Speciality speciality;
-    @Embedded
-    @NotNull
-    @Valid
-    private Address address;
+
     @Column(nullable = false)
     private boolean active = true;
 
-    public Doctor(){}
-
-    public Doctor(DoctorRegistrationData data) {
-        this.name = data.name();
-        this.email = data.email();
-        this.phone = data.phone();
-        this.crm = data.crm();
-        this.speciality = data.speciality();
-        this.address = new Address(data.address());
-    }
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
     public String getCrm() { return crm; }
     public void setCrm(String crm) { this.crm = crm; }
+
     public Speciality getSpeciality() { return speciality; }
     public void setSpeciality(Speciality speciality) { this.speciality = speciality; }
-    public Address getAddress() { return address; }
-    public void setAddress(Address address) { this.address = address; }
+
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 }

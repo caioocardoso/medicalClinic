@@ -6,6 +6,10 @@ import org.medical.clinic.medicalclinic.DTO.AppointmentDTO;
 import org.medical.clinic.medicalclinic.DTO.AppointmentRequest;
 import org.medical.clinic.medicalclinic.models.Appointment;
 import org.medical.clinic.medicalclinic.services.AppointmentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +31,9 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AppointmentDTO>> getAllAppointment() {
-        List<AppointmentDTO> appointments = service.getAllAppointments();
+    public ResponseEntity<Page<AppointmentDTO>> getAllAppointment(
+            @PageableDefault(size = 10, sort = "startDateTime", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<AppointmentDTO> appointments = service.getAllAppointments(pageable);
         return ResponseEntity.ok(appointments);
     }
 
