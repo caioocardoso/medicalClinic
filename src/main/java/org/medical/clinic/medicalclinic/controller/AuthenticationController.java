@@ -5,16 +5,14 @@ import org.medical.clinic.medicalclinic.DTO.LoginDTO;
 import org.medical.clinic.medicalclinic.DTO.RegisterDTO;
 import org.medical.clinic.medicalclinic.DTO.TokenDTO;
 import org.medical.clinic.medicalclinic.DTO.UserDTO;
-import org.medical.clinic.medicalclinic.models.Role;
+import org.medical.clinic.medicalclinic.models.RoleType;
 import org.medical.clinic.medicalclinic.models.User;
-import org.medical.clinic.medicalclinic.repositories.UserRepository;
 import org.medical.clinic.medicalclinic.services.AuthenticationService;
 import org.medical.clinic.medicalclinic.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,10 +38,20 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody @Valid RegisterDTO data) {
-        User savedUser = authenticationService.register(data);
-        if (savedUser == null) {
+        User savedUser = authenticationService.register(data, RoleType.ROLE_PATIENT);
+        if (savedUser == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(new UserDTO(savedUser));
+    }
+
+    @PostMapping("/register/admin")
+    public ResponseEntity<UserDTO> registerAdmin(@RequestBody @Valid RegisterDTO data) {
+        if (data.role() == null) {
             return ResponseEntity.badRequest().build();
         }
+
+        User savedUser = authenticationService.register(data, data.role());
+
+        if(savedUser == null) return ResponseEntity.badRequest().build();
         return ResponseEntity.ok(new UserDTO(savedUser));
     }
 }

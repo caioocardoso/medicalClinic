@@ -18,13 +18,11 @@ public class User implements UserDetails {
     private Long id;
     private String login;
     private String password;
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<RoleType> roleTypes = new HashSet<>();
 
     public User(){}
 
@@ -35,8 +33,8 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getRole()))
+        return roleTypes.stream()
+                .map(roleType -> new SimpleGrantedAuthority(roleType.name()))
                 .collect(Collectors.toList());
     }
 
@@ -94,11 +92,11 @@ public class User implements UserDetails {
         return true;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+    public Set<RoleType> getRoles() {
+        return roleTypes;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setRoles(Set<RoleType> roleTypes) {
+        this.roleTypes = roleTypes;
     }
 }

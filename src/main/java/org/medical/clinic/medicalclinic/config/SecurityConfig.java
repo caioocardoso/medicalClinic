@@ -34,8 +34,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/doctors").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/patients").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/auth/register/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/medico").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/paciente").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
