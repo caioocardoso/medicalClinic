@@ -1,15 +1,15 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import jakarta.validation.Valid;
+import org.medical.clinic.medicalclinic.DTO.AppointmentCancellationRequest;
 import org.medical.clinic.medicalclinic.DTO.AppointmentDTO;
 import org.medical.clinic.medicalclinic.DTO.AppointmentRequest;
 import org.medical.clinic.medicalclinic.models.Appointment;
 import org.medical.clinic.medicalclinic.services.AppointmentService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/consulta")
@@ -24,5 +24,29 @@ public class AppointmentController {
     public ResponseEntity<AppointmentDTO> schedule(@RequestBody @Valid AppointmentRequest newAppointment) {
         AppointmentDTO saved = service.schedule(newAppointment);
         return ResponseEntity.status(201).body(saved);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AppointmentDTO>> getAllAppointment() {
+        List<AppointmentDTO> appointments = service.getAllAppointments();
+        return ResponseEntity.ok(appointments);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AppointmentDTO> getAppointmentById(@PathVariable Long id) {
+        AppointmentDTO appointment = service.getAppointmentById(id);
+        return ResponseEntity.ok(appointment);
+    }
+
+    @GetMapping("/paciente/{patientId}")
+    public ResponseEntity<List<AppointmentDTO>> getPatientAppointments(@PathVariable Long patientId) {
+        List<AppointmentDTO> appointments = service.getPatientAppointments(patientId);
+        return ResponseEntity.ok(appointments);
+    }
+
+    @DeleteMapping
+    public ResponseEntity cancel(@RequestBody @Valid AppointmentCancellationRequest cancellation) {
+        service.cancel(cancellation);
+        return ResponseEntity.noContent().build();
     }
 }

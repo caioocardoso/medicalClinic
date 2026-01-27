@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -31,4 +32,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     boolean existsPatientAppointmentOnDay(@Param("patient") Patient patient,
                                           @Param("dayStart") LocalDateTime dayStart,
                                           @Param("dayEnd") LocalDateTime dayEnd);
+
+    @Query("select a from Appointment a where a.patient = :patient order by a.startDateTime desc")
+    List<Appointment> findByPatient(@Param("patient") Patient patient);
 }
