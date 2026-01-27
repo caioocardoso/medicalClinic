@@ -62,7 +62,7 @@ public class AuthenticationService implements UserDetailsService {
                 doctorRepository.save(doctor);
             }
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar perfil vinculado: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while create autenticated profile: " + e.getMessage());
         }
 
         return savedUser;
