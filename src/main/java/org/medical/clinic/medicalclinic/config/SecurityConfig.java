@@ -35,25 +35,27 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-//                        // Autenticação
-//                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-//                        .requestMatchers(HttpMethod.POST, "/auth/register/admin").hasRole("MASTER")
-//
-//                        .requestMatchers(HttpMethod.POST, "/medico/**").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.PUT, "/medico/**").hasRole("DOCTOR")
-//                        .requestMatchers(HttpMethod.DELETE, "/medico/**").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.GET, "/medico/**").hasRole("DOCTOR")
-//
-//                        .requestMatchers(HttpMethod.GET, "/paciente").hasRole("ADMIN")
-//                        .requestMatchers(HttpMethod.PUT, "/paciente/**").authenticated()
-//                        .requestMatchers(HttpMethod.DELETE, "/paciente/**").hasRole("ADMIN")
-//
-//                        .requestMatchers(HttpMethod.POST, "/consulta").hasRole("PATIENT")
-//                        .requestMatchers(HttpMethod.DELETE, "/consulta").authenticated()
-//                        .requestMatchers(HttpMethod.GET, "/consulta/paciente/**").authenticated()
-//                        .requestMatchers(HttpMethod.GET, "/consulta").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
-                        .anyRequest().permitAll()
+                        .requestMatchers(HttpMethod.POST, "/paciente/perfil").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/register/patient").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/auth/register/doctor").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/medico/**").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.POST, "/medico/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/medico/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/medico/**").hasAnyRole("DOCTOR")
+
+                        .requestMatchers(HttpMethod.GET, "/paciente").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/paciente/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/paciente/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/consulta").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.DELETE, "/consulta").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/consulta/paciente/**").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/consulta").hasRole("DOCTOR")
+
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

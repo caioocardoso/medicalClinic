@@ -1,9 +1,10 @@
 package org.medical.clinic.medicalclinic.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import org.jspecify.annotations.Nullable;
-import org.medical.clinic.medicalclinic.DTO.RegisterDTO;
+import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.PatientRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.UserRegistrationData;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +29,7 @@ public class User implements UserDetails {
     @Embedded
     private Address address;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
@@ -36,12 +37,12 @@ public class User implements UserDetails {
 
     public User(){}
 
-    public User(RegisterDTO data, String hashedPassword) {
+    public User(UserRegistrationData data, String hashedPassword) {
         this.password = hashedPassword;
-        this.name = data.name();
-        this.email = data.email();
-        this.phone = data.phone();
-        this.address = new Address(data.address());
+        this.name = data.getName();
+        this.email = data.getEmail();
+        this.phone = data.getPhone();
+        this.address = new Address(data.getAddress());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.medical.clinic.medicalclinic.repositories;
 
 import org.medical.clinic.medicalclinic.models.Doctor;
+import org.medical.clinic.medicalclinic.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,8 @@ import java.util.Optional;
 @Repository
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Page<Doctor> findAllByActiveTrue(Pageable pageable);
+
+    boolean existsByUser(User user);
 
     @Query("""
             SELECT count(d) FROM Doctor d

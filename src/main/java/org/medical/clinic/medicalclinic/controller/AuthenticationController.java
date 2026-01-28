@@ -1,16 +1,11 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import jakarta.validation.Valid;
-import org.medical.clinic.medicalclinic.DTO.LoginDTO;
-import org.medical.clinic.medicalclinic.DTO.RegisterDTO;
-import org.medical.clinic.medicalclinic.DTO.TokenDTO;
-import org.medical.clinic.medicalclinic.DTO.UserDTO;
-import org.medical.clinic.medicalclinic.models.RoleType;
+import org.medical.clinic.medicalclinic.DTO.*;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AuthenticationService;
 import org.medical.clinic.medicalclinic.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
@@ -39,19 +33,21 @@ public class AuthenticationController {
         return ResponseEntity.ok(new TokenDTO(token));
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody @Valid RegisterDTO data) {
-        User savedUser = authenticationService.register(data, RoleType.ROLE_PATIENT);
-        return ResponseEntity.ok(new UserDTO(savedUser));
+//    @PostMapping("/register")
+//    public ResponseEntity<UserDTO> registerUser(@RequestBody @Valid UserRegistrationData data) {
+//        User savedUser = authenticationService.createUser(data);
+//        return ResponseEntity.ok(new UserDTO(savedUser));
+//    }
+
+    @PostMapping("/register/patient")
+    public ResponseEntity<PatientDTO> registerPatient(@RequestBody @Valid PatientSignupRequest data) {
+        PatientDTO savedUser = authenticationService.createNewPatient(data);
+        return ResponseEntity.ok(savedUser);
     }
 
-    @PostMapping("/register/admin")
-    public ResponseEntity<UserDTO> registerAdmin(@RequestBody @Valid RegisterDTO data) {
-        if (data.role() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role is required to Admin register");
-        }
-
-        User savedUser = authenticationService.register(data, data.role());
-        return ResponseEntity.ok(new UserDTO(savedUser));
+    @PostMapping("/register/doctor")
+    public ResponseEntity<DoctorDTO> registerDoctor(@RequestBody @Valid DoctorSignupRequest data) {
+        DoctorDTO savedUser = authenticationService.createNewDoctor(data);
+        return ResponseEntity.ok(savedUser);
     }
 }

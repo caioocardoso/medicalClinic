@@ -3,6 +3,7 @@ package org.medical.clinic.medicalclinic.services;
 import org.medical.clinic.medicalclinic.DTO.*;
 import org.medical.clinic.medicalclinic.models.Address;
 import org.medical.clinic.medicalclinic.models.Patient;
+import org.medical.clinic.medicalclinic.models.RoleType;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.repositories.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,10 @@ public class PatientService {
     private PatientRepository repository;
 
     @Transactional
-    public PatientDTO createPatientProfile(User user, String cpf) {
+    public PatientDTO createPatientProfile(User user, PatientRegistrationData patientData) {
         Patient patient = new Patient();
         patient.setUser(user);
-        patient.setCpf(cpf);
+        patient.setCpf(patientData.cpf());
         Patient saved = repository.save(patient);
         return new PatientDTO(saved);
     }
@@ -60,5 +61,21 @@ public class PatientService {
         patient.setActive(false);
         repository.save(patient);
         return new PatientDTO(patient);
+    }
+
+    @Transactional
+    public PatientDTO addPatientProfileToExistingUser(User user, String cpf) {
+        if (repository.existsByUser(user)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a patient");
+        }
+
+        Patient patient = new Patient();
+        patient.setUser(user);
+        patient.setCpf(cpf);
+
+        user.getRoles().add(RoleType.ROLE_PATIENT);
+
+        Patient saved = repository.save(patient);
+        return new PatientDTO(saved);
     }
 }
