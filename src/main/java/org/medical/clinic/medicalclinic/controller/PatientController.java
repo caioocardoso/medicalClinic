@@ -3,35 +3,29 @@ package org.medical.clinic.medicalclinic.controller;
 import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.*;
 import org.medical.clinic.medicalclinic.models.Patient;
+import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.DoctorService;
 import org.medical.clinic.medicalclinic.services.PatientService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/paciente")
 @Validated
 public class PatientController {
+    @Autowired
     PatientService service;
-
-    public PatientController(PatientService service) {
-        this.service = service;
-    }
-
-    @PostMapping
-    public ResponseEntity<PatientDTO> newPatient(@RequestBody @Valid PatientRegistrationData newPatient) {
-        PatientDTO saved = service.newPatient(newPatient);
-        return ResponseEntity.status(201).body(saved);
-    }
 
     @GetMapping
     public ResponseEntity<Page<PatientDTO>> getAllPatients(
-            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "user.name", direction = Sort.Direction.ASC) Pageable pageable) {
         Page<PatientDTO> patients = service.getAllPatients(pageable);
         return ResponseEntity.ok(patients);
     }
@@ -46,5 +40,14 @@ public class PatientController {
     public ResponseEntity<PatientDTO> deletePatient(@PathVariable Long id){
         PatientDTO deleted = service.deletePatient(id);
         return ResponseEntity.ok(deleted);
+    }
+
+    @PostMapping("/perfil")
+    public ResponseEntity<PatientDTO> addPatientProfile(
+            @RequestBody @Valid PatientRegistrationData data,
+            @AuthenticationPrincipal User user) {
+
+        PatientDTO patientDTO = service.addPatientProfileToExistingUser(user, data.cpf());
+        return ResponseEntity.status(HttpStatus.CREATED).body(patientDTO);
     }
 }

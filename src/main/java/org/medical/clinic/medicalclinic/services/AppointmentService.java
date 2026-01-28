@@ -7,6 +7,7 @@ import org.medical.clinic.medicalclinic.repositories.AppointmentRepository;
 import org.medical.clinic.medicalclinic.repositories.DoctorRepository;
 import org.medical.clinic.medicalclinic.repositories.PatientRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -71,8 +72,14 @@ public class AppointmentService {
             if (conflict)
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Doctor is not available at the requested time");
         } else {
-            chosenDoctor = doctorRepository.findRandomAvailableDoctor(start, end)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No available doctors at the requested time"));
+            Long totalAvailable = doctorRepository.countAvailableDoctors(start, end);
+            if (totalAvailable == 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No available doctors at the requested time");
+            }
+            int randomIndex = random.nextInt(totalAvailable.intValue());
+            Page<Doctor> doctorPage = doctorRepository.findAvailableDoctors(start, end, PageRequest.of(randomIndex, 1));
+
+            chosenDoctor = doctorPage.getContent().get(0);
         }
 
         Appointment newAppointment = new Appointment(chosenDoctor, patient, dateTime);
@@ -80,9 +87,8 @@ public class AppointmentService {
         return new AppointmentDTO(saved);
     }
 
-    public List<AppointmentDTO> getAllAppointments() {
-        List<Appointment> appointments = appointmentRepository.findAll();
-        return appointments.stream().map(AppointmentDTO::new).toList();
+    public Page<AppointmentDTO> getAllAppointments(Pageable pageable) {
+        return appointmentRepository.findAll(pageable).map(AppointmentDTO::new);
     }
 
     public AppointmentDTO getAppointmentById(Long id) {
@@ -91,7 +97,20 @@ public class AppointmentService {
         return new AppointmentDTO(appointment);
     }
 
-    public List<AppointmentDTO> getPatientAppointments(Long patientId) {
+    public List<AppointmentDTO> getAppointmentsByUser(User user) {
+        Patient patient = patientRepository.findByUser(user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not identified as a patient."));
+
+        if (!patient.isActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Patient profile is inactive");
+        }
+
+        List<Appointment> appointments = appointmentRepository.findByPatient(patient);
+
+        return appointments.stream().map(AppointmentDTO::new).toList();
+    }
+
+    public List<AppointmentDTO> getAppointmentsByPatientId(Long patientId) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
 

@@ -1,11 +1,7 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import jakarta.validation.Valid;
-import org.medical.clinic.medicalclinic.DTO.LoginDTO;
-import org.medical.clinic.medicalclinic.DTO.RegisterDTO;
-import org.medical.clinic.medicalclinic.DTO.TokenDTO;
-import org.medical.clinic.medicalclinic.DTO.UserDTO;
-import org.medical.clinic.medicalclinic.models.RoleType;
+import org.medical.clinic.medicalclinic.DTO.*;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AuthenticationService;
 import org.medical.clinic.medicalclinic.services.TokenService;
@@ -30,28 +26,22 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginDTO loginDTO) {
-        var usernamePassword = new UsernamePasswordAuthenticationToken(loginDTO.login(), loginDTO.password());
+        var usernamePassword = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
+
         var token = tokenService.generateToken((User) auth.getPrincipal());
         return ResponseEntity.ok(new TokenDTO(token));
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody @Valid RegisterDTO data) {
-        User savedUser = authenticationService.register(data, RoleType.ROLE_PATIENT);
-        if (savedUser == null) return ResponseEntity.badRequest().build();
-        return ResponseEntity.ok(new UserDTO(savedUser));
+    @PostMapping("/register/patient")
+    public ResponseEntity<PatientDTO> registerPatient(@RequestBody @Valid PatientSignupRequest data) {
+        PatientDTO savedUser = authenticationService.createNewPatient(data);
+        return ResponseEntity.ok(savedUser);
     }
 
-    @PostMapping("/register/admin")
-    public ResponseEntity<UserDTO> registerAdmin(@RequestBody @Valid RegisterDTO data) {
-        if (data.role() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        User savedUser = authenticationService.register(data, data.role());
-
-        if(savedUser == null) return ResponseEntity.badRequest().build();
-        return ResponseEntity.ok(new UserDTO(savedUser));
+    @PostMapping("/register/doctor")
+    public ResponseEntity<DoctorDTO> registerDoctor(@RequestBody @Valid DoctorSignupRequest data) {
+        DoctorDTO savedUser = authenticationService.createNewDoctor(data);
+        return ResponseEntity.ok(savedUser);
     }
 }

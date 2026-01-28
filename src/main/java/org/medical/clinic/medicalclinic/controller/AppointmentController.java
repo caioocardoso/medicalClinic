@@ -4,9 +4,14 @@ import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.AppointmentCancellationRequest;
 import org.medical.clinic.medicalclinic.DTO.AppointmentDTO;
 import org.medical.clinic.medicalclinic.DTO.AppointmentRequest;
-import org.medical.clinic.medicalclinic.models.Appointment;
+import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AppointmentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,8 +32,9 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AppointmentDTO>> getAllAppointment() {
-        List<AppointmentDTO> appointments = service.getAllAppointments();
+    public ResponseEntity<Page<AppointmentDTO>> getAllAppointment(
+            @PageableDefault(size = 10, sort = "startDateTime", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<AppointmentDTO> appointments = service.getAllAppointments(pageable);
         return ResponseEntity.ok(appointments);
     }
 
@@ -38,9 +44,15 @@ public class AppointmentController {
         return ResponseEntity.ok(appointment);
     }
 
+    @GetMapping("/paciente")
+    public ResponseEntity<List<AppointmentDTO>> getMyAppointments(@AuthenticationPrincipal User user) {
+        List<AppointmentDTO> appointments = service.getAppointmentsByUser(user);
+        return ResponseEntity.ok(appointments);
+    }
+
     @GetMapping("/paciente/{patientId}")
     public ResponseEntity<List<AppointmentDTO>> getPatientAppointments(@PathVariable Long patientId) {
-        List<AppointmentDTO> appointments = service.getPatientAppointments(patientId);
+        List<AppointmentDTO> appointments = service.getAppointmentsByPatientId(patientId);
         return ResponseEntity.ok(appointments);
     }
 

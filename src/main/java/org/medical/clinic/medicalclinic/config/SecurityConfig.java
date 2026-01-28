@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -33,13 +35,39 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register/admin").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/medico").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/paciente/perfil").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/auth/register/patient").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/auth/register/doctor").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/medico/**").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.POST, "/medico/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/medico/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/medico/**").hasAnyRole("DOCTOR")
+
                         .requestMatchers(HttpMethod.GET, "/paciente").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/paciente/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/paciente/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/consulta").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.DELETE, "/consulta").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/consulta/paciente/**").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/consulta/paciente").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/consulta").hasRole("DOCTOR")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+
+    @Bean
+    public RoleHierarchy roleHierarchy(){
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("MASTER").implies("ADMIN")
+                .role("ADMIN").implies("DOCTOR")
+                .role("DOCTOR").implies("PATIENT")
                 .build();
     }
 

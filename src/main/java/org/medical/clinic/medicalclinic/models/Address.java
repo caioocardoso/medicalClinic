@@ -60,4 +60,32 @@ public class Address {
     public String getCity() { return city; }
     public String getUf() { return uf; }
     public String getZipCode() { return zipCode; }
+
+    public void setPublicPlace(String publicPlace) {
+        this.publicPlace = publicPlace;
+    }
+
+    public void setNumber(Integer number) {
+        this.number = number;
+    }
+
+    public void setComplement(String complement) {
+        this.complement = complement;
+    }
+
+    public void setNeighborhood(String neighborhood) {
+        this.neighborhood = neighborhood;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public void setUf(String uf) {
+        this.uf = uf;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
 }
