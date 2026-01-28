@@ -33,12 +33,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(new TokenDTO(token));
     }
 
-//    @PostMapping("/register")
-//    public ResponseEntity<UserDTO> registerUser(@RequestBody @Valid UserRegistrationData data) {
-//        User savedUser = authenticationService.createUser(data);
-//        return ResponseEntity.ok(new UserDTO(savedUser));
-//    }
-
     @PostMapping("/register/patient")
     public ResponseEntity<PatientDTO> registerPatient(@RequestBody @Valid PatientSignupRequest data) {
         PatientDTO savedUser = authenticationService.createNewPatient(data);
