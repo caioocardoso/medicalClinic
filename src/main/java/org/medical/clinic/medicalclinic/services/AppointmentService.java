@@ -97,7 +97,20 @@ public class AppointmentService {
         return new AppointmentDTO(appointment);
     }
 
-    public List<AppointmentDTO> getPatientAppointments(Long patientId) {
+    public List<AppointmentDTO> getAppointmentsByUser(User user) {
+        Patient patient = patientRepository.findByUser(user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not identified as a patient."));
+
+        if (!patient.isActive()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Patient profile is inactive");
+        }
+
+        List<Appointment> appointments = appointmentRepository.findByPatient(patient);
+
+        return appointments.stream().map(AppointmentDTO::new).toList();
+    }
+
+    public List<AppointmentDTO> getAppointmentsByPatientId(Long patientId) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
 
