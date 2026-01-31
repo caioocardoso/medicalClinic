@@ -5,6 +5,8 @@ import org.medical.clinic.medicalclinic.DTO.*;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AuthenticationService;
 import org.medical.clinic.medicalclinic.services.TokenService;
+import org.medical.clinic.medicalclinic.clients.EmailClient;
+import org.medical.clinic.medicalclinic.clients.EmailDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,8 +23,6 @@ public class AuthenticationController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private TokenService tokenService;
-    @Autowired
-    private AuthenticationService authenticationService;
     @Autowired
     private AuthenticationService authenticationService;
     @Autowired

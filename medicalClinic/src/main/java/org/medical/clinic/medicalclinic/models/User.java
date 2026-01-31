@@ -1,7 +1,7 @@
 package org.medical.clinic.medicalclinic.models;
 
 import jakarta.persistence.*;
-import org.jspecify.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
 import org.medical.clinic.medicalclinic.DTO.PatientRegistrationData;
 import org.medical.clinic.medicalclinic.DTO.UserRegistrationData;
