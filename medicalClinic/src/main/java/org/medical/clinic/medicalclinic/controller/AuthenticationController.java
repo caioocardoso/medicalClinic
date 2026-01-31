@@ -23,6 +23,10 @@ public class AuthenticationController {
     private TokenService tokenService;
     @Autowired
     private AuthenticationService authenticationService;
+    @Autowired
+    private AuthenticationService authenticationService;
+    @Autowired
+    private EmailClient emailClient;
 
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginDTO loginDTO) {
@@ -36,6 +40,10 @@ public class AuthenticationController {
     @PostMapping("/register/patient")
     public ResponseEntity<PatientDTO> registerPatient(@RequestBody @Valid PatientSignupRequest data) {
         PatientDTO savedUser = authenticationService.createNewPatient(data);
+
+        EmailDto email = new EmailDto(data.userData().getEmail(), "Bem-vindo", "Seu cadastro foi realizado!");
+        emailClient.sendEmail(email);
+
         return ResponseEntity.ok(savedUser);
     }
 
