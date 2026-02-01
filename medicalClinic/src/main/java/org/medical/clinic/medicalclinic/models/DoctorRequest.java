@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class DoctorRequest {
     @Id
@@ -21,11 +23,21 @@ public class DoctorRequest {
     private boolean isAccepted = false;
     private boolean finished = false;
 
+    private LocalDateTime createdAt;
+
     public DoctorRequest() {}
 
     public DoctorRequest(User user, DoctorRegistrationData doctorRegistrationData) {
         this.user = user;
         this.doctorRegistrationData = doctorRegistrationData;
+    }
+
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public Long getId() {

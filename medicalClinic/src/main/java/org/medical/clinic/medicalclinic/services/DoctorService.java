@@ -108,6 +108,10 @@ public class DoctorService {
         return new DoctorRequestDTO(doctorRequest);
     }
 
+    public Page<DoctorRequestDTO> listDoctorRequests(Pageable pageable) {
+        return doctorRequestRepository.findAll(pageable).map(DoctorRequestDTO::new);
+    }
+
     @Transactional
     public DoctorDTO addDoctorProfileToUserById(Long userId, DoctorRegistrationData data) {
         User targetUser = userRepository.findById(userId)

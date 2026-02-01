@@ -50,6 +50,14 @@ public class DoctorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorRequestDTO);
     }
 
+    @GetMapping("/listar-solicitacoes")
+    public ResponseEntity<Page<DoctorRequestDTO>> listDoctorRequests(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ){
+        Page<DoctorRequestDTO> doctorRequests = service.listDoctorRequests(pageable);
+        return ResponseEntity.ok(doctorRequests);
+    }
+
     @PostMapping("/aceitar-cadastro")
     public ResponseEntity<DoctorRequestDTO> approveDoctorRegistration(@RequestBody ApprovalDoctorRequest approvalData){
         DoctorRequestDTO doctorRequestDTO = service.approveDoctorRequest(approvalData);
