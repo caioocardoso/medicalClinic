@@ -22,6 +22,8 @@ public class UserRegistrationData {
     @Valid
     private Address address;
 
+    public UserRegistrationData(UserRegistrationData userRegistrationData) {}
+
     public String getEmail() {
         return email;
     }

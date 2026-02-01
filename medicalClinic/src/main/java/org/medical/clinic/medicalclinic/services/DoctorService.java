@@ -1,11 +1,10 @@
 package org.medical.clinic.medicalclinic.services;
 
 import jakarta.transaction.Transactional;
-import org.medical.clinic.medicalclinic.DTO.DoctorDTO;
+import org.medical.clinic.medicalclinic.DTO.*;
 import org.medical.clinic.medicalclinic.models.*;
-import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
-import org.medical.clinic.medicalclinic.DTO.DoctorUpdateData;
 import org.medical.clinic.medicalclinic.repositories.DoctorRepository;
+import org.medical.clinic.medicalclinic.repositories.DoctorRequestRepository;
 import org.medical.clinic.medicalclinic.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +19,8 @@ public class DoctorService {
     private DoctorRepository doctorRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    DoctorRequestRepository doctorRequestRepository;
 
     @Transactional
     public DoctorDTO createDoctorProfile(User user, DoctorRegistrationData doctorData) {
@@ -63,6 +64,29 @@ public class DoctorService {
         doctor.setActive(false);
         doctorRepository.save(doctor);
         return new DoctorDTO(doctor);
+    }
+
+    public DoctorRequestDTO saveDoctorRequest (DoctorRequest doctorRequest){
+        DoctorRequest savedEntity = doctorRequestRepository.save(doctorRequest);
+
+        return new DoctorRequestDTO(savedEntity);
+    }
+
+    public DoctorRequestDTO approveDoctorRequest(ApprovalDoctorRequest approvalData){
+        DoctorRequest doctorRequest = doctorRequestRepository.findById(approvalData.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor request not found"));
+        User user = doctorRequest.getUser();
+        if(approvalData.isApproved()){
+            createDoctorProfile(user, doctorRequest.getDoctorRegistrationData());
+            user.getRoles().add(RoleType.ROLE_DOCTOR);
+            userRepository.save(user);
+            doctorRequest.setAccepted(true);
+        }else {
+            doctorRequest.setAccepted(false);
+        }
+        doctorRequest.setFinished(true);
+        doctorRequestRepository.save(doctorRequest);
+        return new DoctorRequestDTO(doctorRequest);
     }
 
     @Transactional

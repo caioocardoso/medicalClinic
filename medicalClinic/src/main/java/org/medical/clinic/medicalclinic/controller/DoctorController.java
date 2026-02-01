@@ -1,9 +1,7 @@
 package org.medical.clinic.medicalclinic.controller;
 
-import org.medical.clinic.medicalclinic.DTO.DoctorDTO;
-import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
-import org.medical.clinic.medicalclinic.DTO.DoctorUpdateData;
-import org.medical.clinic.medicalclinic.DTO.PatientDTO;
+import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.models.DoctorRequest;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +41,19 @@ public class DoctorController {
     public ResponseEntity<DoctorDTO> deleteDoctor(@PathVariable Long id){
         DoctorDTO deleted = service.deleteDoctor(id);
         return ResponseEntity.ok(deleted);
+    }
+
+    @PostMapping("/solicitar-cadastro")
+    public ResponseEntity<DoctorRequestDTO> registerDoctorRequest(@AuthenticationPrincipal User user, @Valid @RequestBody DoctorRegistrationData doctorRegistrationData){
+        DoctorRequest doctorRequest = new DoctorRequest(user, doctorRegistrationData);
+        DoctorRequestDTO doctorRequestDTO = service.saveDoctorRequest(doctorRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(doctorRequestDTO);
+    }
+
+    @PostMapping("/aceitar-cadastro")
+    public ResponseEntity<DoctorRequestDTO> approveDoctorRegistration(@RequestBody ApprovalDoctorRequest approvalData){
+        DoctorRequestDTO doctorRequestDTO = service.approveDoctorRequest(approvalData);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(doctorRequestDTO);
     }
 
     @PostMapping("/{id}/perfil")

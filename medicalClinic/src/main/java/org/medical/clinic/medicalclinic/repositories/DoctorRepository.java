@@ -1,6 +1,7 @@
 package org.medical.clinic.medicalclinic.repositories;
 
 import org.medical.clinic.medicalclinic.models.Doctor;
+import org.medical.clinic.medicalclinic.models.DoctorRequest;
 import org.medical.clinic.medicalclinic.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
