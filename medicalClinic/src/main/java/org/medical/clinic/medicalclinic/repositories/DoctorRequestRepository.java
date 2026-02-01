@@ -16,4 +16,5 @@ import java.time.LocalDateTime;
 @Repository
 public interface DoctorRequestRepository extends JpaRepository<DoctorRequest, Long> {
     Page<DoctorRequest> findAllByIsAcceptedFalse(Pageable pageable);
+    boolean existsByUserAndFinishedFalse(User user);
 }

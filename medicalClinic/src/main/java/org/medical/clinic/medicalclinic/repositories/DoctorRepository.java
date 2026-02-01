@@ -18,6 +18,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Page<Doctor> findAllByActiveTrue(Pageable pageable);
 
     boolean existsByUser(User user);
+    boolean existsByCrm(String crm);
 
     @Query("""
             SELECT count(d) FROM Doctor d

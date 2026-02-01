@@ -67,6 +67,12 @@ public class DoctorService {
     }
 
     public DoctorRequestDTO saveDoctorRequest (DoctorRequest doctorRequest){
+        if(doctorRequestRepository.existsByUserAndFinishedFalse(doctorRequest.getUser())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "There is already a pending doctor request for this user");
+        }
+        if(doctorRepository.existsByCrm(doctorRequest.getDoctorRegistrationData().crm())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A doctor with this CRM already exists");
+        }
         DoctorRequest savedEntity = doctorRequestRepository.save(doctorRequest);
 
         return new DoctorRequestDTO(savedEntity);
@@ -75,15 +81,28 @@ public class DoctorService {
     public DoctorRequestDTO approveDoctorRequest(ApprovalDoctorRequest approvalData){
         DoctorRequest doctorRequest = doctorRequestRepository.findById(approvalData.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor request not found"));
+
+        if (doctorRequest.isFinished()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Doctor request has already been processed");
+        }
+
+        if(doctorRepository.existsByCrm(doctorRequest.getDoctorRegistrationData().crm())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A doctor with this CRM already exists");
+        }
+
         User user = doctorRequest.getUser();
+
         if(approvalData.isApproved()){
+            if(user.getRoles().contains(RoleType.ROLE_DOCTOR) || doctorRepository.existsByUser(user)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a doctor");
+            }
+
             createDoctorProfile(user, doctorRequest.getDoctorRegistrationData());
             user.getRoles().add(RoleType.ROLE_DOCTOR);
             userRepository.save(user);
             doctorRequest.setAccepted(true);
-        }else {
-            doctorRequest.setAccepted(false);
-        }
+        }else doctorRequest.setAccepted(false);
+
         doctorRequest.setFinished(true);
         doctorRequestRepository.save(doctorRequest);
         return new DoctorRequestDTO(doctorRequest);
