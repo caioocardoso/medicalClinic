@@ -23,6 +23,7 @@ public class DoctorRequest {
     private boolean isAccepted = false;
     private boolean finished = false;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public DoctorRequest() {}
@@ -32,6 +33,7 @@ public class DoctorRequest {
         this.doctorRegistrationData = doctorRegistrationData;
     }
 
+    @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
