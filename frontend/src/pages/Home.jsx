@@ -5,6 +5,11 @@ import Sidebar from '../components/Sidebar';
 import Modal from '../components/Modal';
 import DoctorsList from '../components/DoctorsList';
 import UserProfile from '../components/UserProfile';
+import DoctorProfile from '../components/DoctorProfile';
+import DoctorRequests from '../components/DoctorRequests';
+import AdminPatientList from '../components/AdminPatientList';
+import AdminDoctorList from '../components/AdminDoctorList';
+import BecomeDoctorForm from '../components/BecomeDoctorForm';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
@@ -14,10 +19,13 @@ const Home = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Data State
-    const [appointments, setAppointments] = useState([]);
-    const [doctors, setDoctors] = useState({}); 
-    const [doctorList, setDoctorList] = useState([]); 
+    const [appointments, setAppointments] = useState([]); // Patient appointments
+    const [doctorAppointments, setDoctorAppointments] = useState([]); // Doctor appointments
+    const [doctors, setDoctors] = useState({}); // Map ID -> Name
+    const [patients, setPatients] = useState({}); // Map ID -> Name (for doctors view)
+    const [doctorList, setDoctorList] = useState([]); // List for dropdown/display
     const [loading, setLoading] = useState(true);
+    const [roles, setRoles] = useState([]);
     
     // Form State
     const [scheduleDate, setScheduleDate] = useState('');
@@ -25,20 +33,43 @@ const Home = () => {
     
     const navigate = useNavigate();
     const patientId = localStorage.getItem('patientId');
+    const doctorId = localStorage.getItem('doctorId');
 
     useEffect(() => {
         if (!localStorage.getItem('token')) {
             navigate('/');
             return;
         }
+        
+        // Parse roles
+        try {
+            const rolesStr = localStorage.getItem('userRoles');
+            const parsedRoles = rolesStr ? JSON.parse(rolesStr) : [];
+            setRoles(parsedRoles);
+            
+            // Set initial tab based on role if needed, but defaults to 'appointments' (Patient)
+            // If only doctor, switch to doctor-appointments
+            // If admin, switch to admin-requests
+            if (parsedRoles.includes('ROLE_ADMIN')) {
+                setActiveTab('admin-requests');
+            } else if (parsedRoles.includes('ROLE_DOCTOR') && !parsedRoles.includes('ROLE_PATIENT')) {
+                setActiveTab('doctor-appointments');
+            }
+        } catch (e) {
+            console.error("Erro ao ler roles", e);
+        }
+
         fetchData();
     }, [navigate]);
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            
-            // 1. Fetch Doctors
+            const rolesStr = localStorage.getItem('userRoles');
+            const currentRoles = rolesStr ? JSON.parse(rolesStr) : [];
+
+            // 1. Fetch Doctors (Needed for Patient view to schedule/list, and mapping names)
+            // Even doctors might want to see other doctors? Maybe not strictly required but harmless.
             const doctorsResponse = await api.get('/medico');
             const docs = doctorsResponse.data.content || [];
             
@@ -49,9 +80,32 @@ const Home = () => {
             setDoctors(docMap);
             setDoctorList(docs);
 
-            // 2. Fetch Appointments
-            const appointmentsResponse = await api.get('/consulta/paciente');
-            setAppointments(appointmentsResponse.data);
+            // 2. If Patient, fetch Patient Appointments
+            if (currentRoles.includes('ROLE_PATIENT') && patientId) {
+                const appointmentsResponse = await api.get('/consulta/paciente');
+                setAppointments(appointmentsResponse.data);
+            }
+
+            // 3. If Doctor, fetch Doctor Appointments and Patients (for mapping)
+            if (currentRoles.includes('ROLE_DOCTOR') && doctorId) {
+                const docAppsResponse = await api.get(`/consulta/medico/${doctorId}`);
+                setDoctorAppointments(docAppsResponse.data);
+
+                // Fetch patients to map names
+                // Note: In a real large app, we wouldn't fetch ALL patients. We'd fetch by ID or the endpoint would return names.
+                // For this scope, we'll fetch page 1 (or all if possible) or just show ID if name missing.
+                try {
+                    const patientsResponse = await api.get('/paciente'); // Returns Page
+                    const pats = patientsResponse.data.content || [];
+                    const patMap = {};
+                    pats.forEach(p => {
+                        patMap[p.id] = p.userData?.name || p.name;
+                    });
+                    setPatients(patMap);
+                } catch (err) {
+                    console.error("Erro ao buscar pacientes", err);
+                }
+            }
             
         } catch (err) {
             console.error(err);
@@ -85,13 +139,9 @@ const Home = () => {
 
             const payload = {
                 patientId: parseInt(patientId),
-                doctorId: selectedDoctorId ? parseInt(selectedDoctorId) : null, // Assuming backend accepts null or ID
+                doctorId: selectedDoctorId ? parseInt(selectedDoctorId) : null,
                 dateTime: dateTimePayload
             };
-
-        console.log("Enviando Payload:", JSON.stringify(payload));
-            // Se o doctorId for nulo e o backend reclamar, podemos ter que remover a chave
-            // Mas o AppointmentRequest tem doctorId opcional.
             
             await api.post('/consulta', payload);
             alert('Consulta agendada com sucesso!');
@@ -113,7 +163,7 @@ const Home = () => {
         try {
             const payload = {
                 appointmentId: appointmentId,
-                reason: 'PATIENT_GAVE_UP' 
+                reason: 'PATIENT_GAVE_UP' // Or generic reason. Doctor canceling technically might send different reason.
             };
             
             await api.delete('/consulta', { data: payload });
@@ -128,11 +178,13 @@ const Home = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('patientId');
+        localStorage.removeItem('doctorId');
+        localStorage.removeItem('userRoles');
         navigate('/');
     };
 
-    const getAppointmentsByStatus = (status) => {
-        return appointments.filter(app => app.status === status);
+    const getAppointmentsByStatus = (list, status) => {
+        return list.filter(app => app.status === status);
     };
 
     // Render Content based on activeTab
@@ -140,12 +192,12 @@ const Home = () => {
         if (loading) return <div>Carregando...</div>;
 
         switch (activeTab) {
+            // --- PATIENT VIEWS ---
             case 'doctors':
                 return <DoctorsList doctors={doctorList} />;
             case 'profile':
                 return <UserProfile />;
             case 'appointments':
-            default:
                 return (
                     <>
                         <div className="header-actions">
@@ -155,7 +207,7 @@ const Home = () => {
                         </div>
 
                         {['SCHEDULED', 'COMPLETED', 'CANCELLED'].map(status => {
-                            const statusApps = getAppointmentsByStatus(status);
+                            const statusApps = getAppointmentsByStatus(appointments, status);
                             if (statusApps.length === 0 && status !== 'SCHEDULED') return null;
 
                             return (
@@ -174,7 +226,8 @@ const Home = () => {
                                                     key={app.id} 
                                                     appointment={app} 
                                                     onCancel={handleCancel}
-                                                    doctors={doctors}
+                                                    entityName={doctors[app.doctorId] || `Médico #${app.doctorId}`}
+                                                    entityLabel="Médico"
                                                 />
                                             ))}
                                         </div>
@@ -184,12 +237,68 @@ const Home = () => {
                         })}
                     </>
                 );
+
+            // --- DOCTOR VIEWS ---
+            case 'doctor-profile':
+                return <DoctorProfile />;
+            case 'doctor-appointments':
+                return (
+                    <>
+                        <div className="header-actions">
+                            <h2>Minha Agenda Médica</h2>
+                        </div>
+
+                        {['SCHEDULED', 'COMPLETED', 'CANCELLED'].map(status => {
+                            const statusApps = getAppointmentsByStatus(doctorAppointments, status);
+                            if (statusApps.length === 0 && status !== 'SCHEDULED') return null;
+
+                            return (
+                                <section key={status} className="status-section">
+                                    <h3 className={`status-title ${status.toLowerCase()}`}>
+                                        {status === 'SCHEDULED' ? 'Agendadas' : 
+                                         status === 'COMPLETED' ? 'Realizadas' : 'Canceladas'}
+                                    </h3>
+                                    
+                                    {statusApps.length === 0 ? (
+                                        <p>Nenhuma consulta encontrada.</p>
+                                    ) : (
+                                        <div className="cards-grid">
+                                            {statusApps.map(app => (
+                                                <AppointmentCard 
+                                                    key={app.id} 
+                                                    appointment={app} 
+                                                    onCancel={handleCancel}
+                                                    entityName={patients[app.patientId] || `Paciente #${app.patientId}`}
+                                                    entityLabel="Paciente"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </section>
+                            );
+                        })}
+                    </>
+                );
+
+            // --- ADMIN VIEWS ---
+            case 'admin-requests':
+                return <DoctorRequests />;
+            case 'admin-patients':
+                return <AdminPatientList />;
+            case 'admin-doctors':
+                return <AdminDoctorList />;
+            
+            case 'become-doctor':
+                return <BecomeDoctorForm />;
+
+            default:
+                return <div>Selecione uma opção no menu.</div>;
         }
     };
 
     return (
         <div className="app-container">
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
+            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} roles={roles} />
             
             <main className="main-content">
                 {renderContent()}
@@ -223,7 +332,7 @@ const Home = () => {
                             <option value="">Qualquer Médico Disponível</option>
                             {doctorList.map(doc => (
                                 <option key={doc.id} value={doc.id}>
-                                    {doc.userData?.name || doc.name} - {doc.specialty || 'Clínico Geral'}
+                                    {doc.userData?.name || doc.name} - {doc.speciality || 'Clínico Geral'}
                                 </option>
                             ))}
                         </select>

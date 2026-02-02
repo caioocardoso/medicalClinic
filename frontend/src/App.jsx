@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
-import RegisterPatient from "./pages/RegisterPatient";
+import Register from "./pages/Register";
 import './App.css';
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/dashboard" element={<Home />} /> {/* Compatibility redirect */}
-        <Route path="/registro" element={<RegisterPatient />} />
+        <Route path="/registro" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );

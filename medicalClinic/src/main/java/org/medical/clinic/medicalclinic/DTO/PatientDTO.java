@@ -8,10 +8,12 @@ public class PatientDTO {
     private String email;
     private String cpf;
     private String phone;
+    private boolean active;
 
     public PatientDTO(Patient patient) {
         this.id = patient.getId();
         this.cpf = patient.getCpf();
+        this.active = patient.isActive();
         if (patient.getUser() != null) {
             this.name = patient.getUser().getName();
             this.email = patient.getUser().getEmail();
@@ -24,4 +26,5 @@ public class PatientDTO {
     public String getEmail() { return email; }
     public String getCpf() { return cpf; }
     public String getPhone() { return phone; }
+    public boolean isActive() { return active; }
 }

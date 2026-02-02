@@ -1,9 +1,10 @@
 import { useState } from "react";
-import api from "../services/api";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-function RegisterPatient() {
+function Register() {
   const navigate = useNavigate();
+  const [userType, setUserType] = useState("patient"); // 'patient' or 'doctor'
   const [formData, setFormData] = useState({
     userData: {
       name: "",
@@ -19,8 +20,16 @@ function RegisterPatient() {
         zipCode: ""
       }
     },
-    patientData: { cpf: "" }
+    patientData: { cpf: "" },
+    doctorData: { crm: "", speciality: "ORTOPEDIA" } // Default speciality
   });
+
+  const specialities = [
+    "ORTOPEDIA",
+    "CARDIOLOGIA",
+    "GINECOLOGIA",
+    "DERMATOLOGIA"
+  ];
 
   const handleChange = (e, section, field) => {
     const value = e.target.value;
@@ -43,8 +52,24 @@ function RegisterPatient() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/auth/register/patient", formData);
-      alert("Registro realizado! Agora você pode fazer login.");
+      // Use raw axios to avoid sending Authorization header from interceptor
+      const api = axios.create({ baseURL: 'http://localhost:8084/medicalclinic' });
+      
+      if (userType === "patient") {
+        const payload = {
+            userData: formData.userData,
+            patientData: formData.patientData
+        };
+        await api.post("/auth/register/patient", payload);
+        alert("Cadastro de paciente realizado! Agora você pode fazer login.");
+      } else {
+        const payload = {
+            userData: formData.userData,
+            doctorData: formData.doctorData
+        };
+        await api.post("/medico/cadastrar-novo", payload);
+        alert("Solicitação de cadastro de médico realizada! Aguarde aprovação de um administrador.");
+      }
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -55,9 +80,28 @@ function RegisterPatient() {
   return (
     <div className="container" style={{ display: "flex", justifyContent: "center", paddingTop: "2rem", paddingBottom: "2rem" }}>
       <div className="card" style={{ width: "100%", maxWidth: "800px" }}>
-        <h2 className="text-center mb-2" style={{ color: "var(--primary-color)" }}>Cadastro de Paciente</h2>
-        <p className="text-center mb-2" style={{ color: "var(--text-secondary)" }}>Preencha seus dados para começar</p>
+        <h2 className="text-center mb-2" style={{ color: "var(--primary-color)" }}>Crie sua conta</h2>
+        <p className="text-center mb-4" style={{ color: "var(--text-secondary)" }}>Escolha o tipo de perfil e preencha seus dados</p>
         
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', justifyContent: 'center' }}>
+            <button 
+                type="button"
+                className={`btn ${userType === 'patient' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setUserType('patient')}
+                style={{ minWidth: '150px' }}
+            >
+                Sou Paciente
+            </button>
+            <button 
+                type="button"
+                className={`btn ${userType === 'doctor' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setUserType('doctor')}
+                style={{ minWidth: '150px' }}
+            >
+                Sou Médico
+            </button>
+        </div>
+
         <form onSubmit={handleSubmit}>
           
           <h4 style={{ margin: "1.5rem 0 1rem", color: "var(--secondary-color)", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" }}>
@@ -84,11 +128,28 @@ function RegisterPatient() {
                 <label className="form-label">Telefone</label>
                 <input className="form-control" placeholder="(XX) XXXXX-XXXX" onChange={e => handleChange(e, "userData", "phone")} required />
               </div>
-              
-              <div className="form-group">
-                <label className="form-label">CPF</label>
-                <input className="form-control" placeholder="000.000.000-00" onChange={e => handleChange(e, "patientData", "cpf")} required />
-              </div>
+
+              {userType === 'patient' ? (
+                  <div className="form-group">
+                    <label className="form-label">CPF</label>
+                    <input className="form-control" placeholder="000.000.000-00" onChange={e => handleChange(e, "patientData", "cpf")} required />
+                  </div>
+              ) : (
+                  <>
+                    <div className="form-group">
+                        <label className="form-label">CRM</label>
+                        <input className="form-control" placeholder="12345/SP" onChange={e => handleChange(e, "doctorData", "crm")} required />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Especialidade</label>
+                        <select className="form-control" onChange={e => handleChange(e, "doctorData", "speciality")} required>
+                            {specialities.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    </div>
+                  </>
+              )}
           </div>
 
           <h4 style={{ margin: "1.5rem 0 1rem", color: "var(--secondary-color)", borderBottom: "1px solid #eee", paddingBottom: "0.5rem" }}>
@@ -132,7 +193,9 @@ function RegisterPatient() {
           </div>
           
           <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-              <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Registrar</button>
+              <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                {userType === 'patient' ? 'Registrar Paciente' : 'Solicitar Cadastro Médico'}
+              </button>
               <button type="button" onClick={() => navigate("/")} className="btn btn-secondary" style={{ flex: 1, backgroundColor: "#999" }}>Voltar</button>
           </div>
         </form>
@@ -141,4 +204,4 @@ function RegisterPatient() {
   );
 }
 
-export default RegisterPatient;
+export default Register;
