@@ -31,7 +31,7 @@ public class PatientService {
     @Transactional
     public PatientDTO updatePatient(Long id, PatientUpdateData data) {
         Patient patient = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
 
         User user = patient.getUser();
 
@@ -53,10 +53,16 @@ public class PatientService {
         return repository.findAllByActiveTrue(pageable).map(PatientDTO::new);
     }
 
+    public PatientProfileDTO getPatientProfileByUserId(Long userId) {
+        Patient patient = repository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
+        return new PatientProfileDTO(patient);
+    }
+
     @Transactional
     public PatientDTO deletePatient(Long id) {
         Patient patient = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
 
         patient.setActive(false);
         repository.save(patient);
@@ -66,7 +72,7 @@ public class PatientService {
     @Transactional
     public PatientDTO addPatientProfileToExistingUser(User user, String cpf) {
         if (repository.existsByUser(user)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a patient");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Usuário já é um paciente");
         }
 
         Patient patient = new Patient();

@@ -32,6 +32,12 @@ public class PatientController {
         return ResponseEntity.ok(patients);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<PatientProfileDTO> getMyData(@AuthenticationPrincipal User user) {
+        PatientProfileDTO patient = service.getPatientProfileByUserId(user.getId());
+        return ResponseEntity.ok(patient);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<PatientDTO> updatePatient(@PathVariable Long id, @Valid @RequestBody PatientUpdateData updatePatient) {
         PatientDTO updated = service.updatePatient(id, updatePatient);

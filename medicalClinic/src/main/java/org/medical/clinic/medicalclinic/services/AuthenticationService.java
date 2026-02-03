@@ -29,7 +29,11 @@ public class AuthenticationService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByEmail(username);
+        UserDetails user = userRepository.findByEmail(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("Usuário não encontrado com o email: " + username);
+        }
+        return user;
     }
 
     @Transactional
@@ -51,7 +55,7 @@ public class AuthenticationService implements UserDetailsService {
     @Transactional
     public User createUser(UserRegistrationData data) {
         if (userRepository.findByEmail(data.getEmail()) != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already registered");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
         }
         String hashedPassword = passwordEncoder.encode(data.getPassword());
 
