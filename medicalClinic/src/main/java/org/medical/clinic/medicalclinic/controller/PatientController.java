@@ -46,14 +46,12 @@ public class PatientController {
     public ResponseEntity<PatientDTO> updatePatient(@PathVariable Long id, @Valid @RequestBody PatientUpdateData updatePatient) {
         PatientDTO updated = service.updatePatient(id, updatePatient);
 
-        // Tenta enviar email mas não falha a atualização se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(updated.getEmail(), "Seu cadastro de paciente foi atualizado com sucesso!", "Olá " + updated.getName() + ", seus dados de paciente foram atualizados com sucesso no nosso sistema.");
             emailClient.sendEmail(email);
             logger.info("Email de atualização enviado para: {}", updated.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de atualização para {}: {}", updated.getEmail(), e.getMessage());
-            // Continua mesmo assim - paciente foi atualizado com sucesso
         }
 
         return ResponseEntity.ok(updated);
@@ -63,14 +61,12 @@ public class PatientController {
     public ResponseEntity<PatientDTO> deletePatient(@PathVariable Long id){
         PatientDTO deleted = service.deletePatient(id);
 
-        // Tenta enviar email mas não falha a exclusão se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(deleted.getEmail(), "Seu cadastro de paciente foi removido!", "Olá " + deleted.getName() + ", seu cadastro de paciente foi removido do nosso sistema. Se tiver alguma dúvida, entre em contato conosco.");
             emailClient.sendEmail(email);
             logger.info("Email de exclusão enviado para: {}", deleted.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de exclusão para {}: {}", deleted.getEmail(), e.getMessage());
-            // Continua mesmo assim - paciente foi excluído com sucesso
         }
 
         return ResponseEntity.ok(deleted);
@@ -83,14 +79,12 @@ public class PatientController {
 
         PatientDTO patientDTO = service.addPatientProfileToExistingUser(user, data.cpf());
 
-        // Tenta enviar email mas não falha a criação do perfil se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(patientDTO.getEmail(), "Perfil de paciente criado com sucesso!", "Olá " + patientDTO.getName() + ", seu perfil de paciente foi criado com sucesso no nosso sistema.");
             emailClient.sendEmail(email);
             logger.info("Email de criação de perfil enviado para: {}", patientDTO.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de criação de perfil para {}: {}", patientDTO.getEmail(), e.getMessage());
-            // Continua mesmo assim - perfil foi criado com sucesso
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(patientDTO);

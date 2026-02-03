@@ -55,14 +55,12 @@ public class DoctorController {
     public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @Valid @RequestBody DoctorUpdateData updateDoctor) {
         DoctorDTO updated = service.updateDoctor(id, updateDoctor);
 
-        // Tenta enviar email mas não falha a atualização se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(updated.getEmail(), "Seu cadastro médico foi atualizado com sucesso!", "Olá " + updated.getName() + ", seus dados médicos foram atualizados com sucesso no nosso sistema.");
             emailClient.sendEmail(email);
             logger.info("Email de atualização enviado para: {}", updated.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de atualização para {}: {}", updated.getEmail(), e.getMessage());
-            // Continua mesmo assim - médico foi atualizado com sucesso
         }
 
         return ResponseEntity.ok(updated);
@@ -72,14 +70,12 @@ public class DoctorController {
     public ResponseEntity<DoctorDTO> deleteDoctor(@PathVariable Long id){
         DoctorDTO deleted = service.deleteDoctor(id);
 
-        // Tenta enviar email mas não falha a exclusão se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(deleted.getEmail(), "Seu cadastro de médico foi removido!", "Olá " + deleted.getName() + ", seu cadastro como médico foi excluído com sucesso do nosso sistema. Se foi um engano, entre em contato com o suporte para mais informações.");
             emailClient.sendEmail(email);
             logger.info("Email de exclusão enviado para: {}", deleted.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de exclusão para {}: {}", deleted.getEmail(), e.getMessage());
-            // Continua mesmo assim - médico foi excluído com sucesso
         }
 
         return ResponseEntity.ok(deleted);
@@ -90,14 +86,12 @@ public class DoctorController {
         DoctorRequest doctorRequest = new DoctorRequest(user, doctorRegistrationData);
         DoctorRequestDTO doctorRequestDTO = service.saveDoctorRequest(doctorRequest);
 
-        // Tenta enviar email mas não falha a solicitação se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(user.getEmail(), "Você solicitou cadastro no nosso sistema!", "Olá " + user.getName() + ", você silicitou cadastro médico no nosso sistema, aguarde algum administrador aceitar a sua solicitação, nós avisaremos você!!");
             emailClient.sendEmail(email);
             logger.info("Email de solicitação enviado para: {}", user.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de solicitação para {}: {}", user.getEmail(), e.getMessage());
-            // Continua mesmo assim - solicitação foi registrada com sucesso
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorRequestDTO);
@@ -121,7 +115,6 @@ public class DoctorController {
     public ResponseEntity<DoctorRequestDTO> approveDoctorRegistration(@RequestBody ApprovalDoctorRequest approvalData){
         DoctorRequestDTO doctorRequestDTO = service.approveDoctorRequest(approvalData);
 
-        // Tenta enviar email mas não falha a aprovação se o serviço de email estiver indisponível
         try {
             EmailDto email;
             if(approvalData.isApproved())
@@ -132,7 +125,6 @@ public class DoctorController {
             logger.info("Email de aprovação/recusa enviado para: {}", doctorRequestDTO.userDTO().email());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de aprovação/recusa para {}: {}", doctorRequestDTO.userDTO().email(), e.getMessage());
-            // Continua mesmo assim - aprovação foi processada com sucesso
         }
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(doctorRequestDTO);

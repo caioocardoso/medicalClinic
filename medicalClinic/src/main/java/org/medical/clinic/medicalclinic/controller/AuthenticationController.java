@@ -45,14 +45,12 @@ public class AuthenticationController {
     public ResponseEntity<PatientDTO> registerPatient(@RequestBody @Valid PatientSignupRequest data) {
         PatientDTO savedUser = authenticationService.createNewPatient(data);
 
-        // Tenta enviar email mas não falha o cadastro se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(data.userData().getEmail(), "Cadastro realizado com sucesso!", "Olá " + data.userData().getName() + ", seu cadastro foi realizado com sucesso no nosso sistema.!");
             emailClient.sendEmail(email);
             logger.info("Email de confirmação de cadastro enviado para: {}", data.userData().getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de cadastro para {}: {}", data.userData().getEmail(), e.getMessage());
-            // Continua mesmo assim - usuário foi cadastrado com sucesso
         }
 
         return ResponseEntity.ok(savedUser);
@@ -62,14 +60,12 @@ public class AuthenticationController {
     public ResponseEntity<DoctorDTO> registerDoctor(@RequestBody @Valid DoctorSignupRequest data) {
         DoctorDTO savedUser = authenticationService.createNewDoctor(data);
 
-        // Tenta enviar email mas não falha o cadastro se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(data.userData().getEmail(), "Cadastro médico realizado com sucesso!", "Olá " + data.userData().getName() + ", seu cadastro como médico foi realizado com sucesso no nosso sistema.!");
             emailClient.sendEmail(email);
             logger.info("Email de confirmação de cadastro médico enviado para: {}", data.userData().getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de cadastro médico para {}: {}", data.userData().getEmail(), e.getMessage());
-            // Continua mesmo assim - médico foi cadastrado com sucesso
         }
 
         return ResponseEntity.ok(savedUser);

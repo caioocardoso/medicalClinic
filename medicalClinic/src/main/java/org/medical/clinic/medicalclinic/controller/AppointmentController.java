@@ -35,7 +35,6 @@ public class AppointmentController {
     public ResponseEntity<AppointmentDTO> schedule(@AuthenticationPrincipal User user, @RequestBody @Valid AppointmentRequest newAppointment) {
         AppointmentDTO saved = service.schedule(newAppointment);
 
-        // Tenta enviar email mas não falha o agendamento se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(
                     user.getEmail(),
@@ -47,7 +46,6 @@ public class AppointmentController {
             logger.info("Email de confirmação de agendamento enviado para: {}", user.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de confirmação para {}: {}", user.getEmail(), e.getMessage());
-            // Continua mesmo assim - consulta foi agendada com sucesso
         }
 
         return ResponseEntity.status(201).body(saved);
@@ -88,7 +86,6 @@ public class AppointmentController {
     public ResponseEntity<AppointmentDTO> cancel(@AuthenticationPrincipal User user, @RequestBody @Valid AppointmentCancellationRequest cancellation) {
         AppointmentDTO appointmentCancelled = service.cancel(cancellation);
 
-        // Tenta enviar email mas não falha o cancelamento se o serviço de email estiver indisponível
         try {
             EmailDto email = new EmailDto(
                     user.getEmail(),
@@ -99,7 +96,6 @@ public class AppointmentController {
             logger.info("Email de confirmação de cancelamento enviado para: {}", user.getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de cancelamento para {}: {}", user.getEmail(), e.getMessage());
-            // Continua mesmo assim - consulta foi cancelada com sucesso
         }
 
         return ResponseEntity.ok(appointmentCancelled);
