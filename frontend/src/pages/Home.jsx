@@ -10,6 +10,7 @@ import DoctorRequests from '../components/DoctorRequests';
 import AdminPatientList from '../components/AdminPatientList';
 import AdminDoctorList from '../components/AdminDoctorList';
 import BecomeDoctorForm from '../components/BecomeDoctorForm';
+import BecomePatientForm from '../components/BecomePatientForm';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
@@ -287,9 +288,19 @@ const Home = () => {
                 return <AdminPatientList />;
             case 'admin-doctors':
                 return <AdminDoctorList />;
-            
             case 'become-doctor':
                 return <BecomeDoctorForm />;
+            case 'become-patient':
+                return <BecomePatientForm onSuccess={(data) => {
+                    // Atualiza os roles do usuário
+                    const currentRoles = roles.includes('ROLE_PATIENT') ? roles : [...roles, 'ROLE_PATIENT'];
+                    setRoles(currentRoles);
+                    localStorage.setItem('userRoles', JSON.stringify(currentRoles));
+                    // Recarrega os dados
+                    fetchData();
+                    // Muda para a aba de consultas
+                    setActiveTab('appointments');
+                }} />;
 
             default:
                 return <div>Selecione uma opção no menu.</div>;

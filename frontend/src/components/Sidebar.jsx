@@ -60,6 +60,15 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, roles = [] }) => {
                         ])}
                     </>
                 )}
+
+                {!isPatient && !isAdmin && (
+                    <>
+                        {isDoctor && <div style={{ padding: '0 1rem', fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginTop: '1rem', marginBottom: '0.5rem' }}>Ações</div>}
+                        {renderItems([
+                            { id: 'become-patient', label: 'Virar Paciente', icon: '👤' }
+                        ])}
+                    </>
+                )}
             </nav>
             <div className="sidebar-footer">
                 <button onClick={onLogout} className="logout-btn-sidebar">
