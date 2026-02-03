@@ -35,4 +35,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @Query("select a from Appointment a where a.patient = :patient order by a.startDateTime desc")
     List<Appointment> findByPatient(@Param("patient") Patient patient);
+
+    @Query("select a from Appointment a where a.doctor = :doctor order by a.startDateTime desc")
+    List<Appointment> findByDoctor(@Param("doctor") Doctor doctor);
 }

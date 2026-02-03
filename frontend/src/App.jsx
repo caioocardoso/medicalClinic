@@ -1,15 +1,18 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./Login";
-import Dashboard from "./Dashboard";
-import RegisterPatient from "./RegisterPatient";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Home from "./pages/Home";
+import Toast from "./components/Toast";
+import './App.css';
 
 function App() {
   return (
     <BrowserRouter>
+      <Toast />
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/registro" element={<RegisterPatient />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/registro" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );

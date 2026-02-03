@@ -9,6 +9,7 @@ public class DoctorDTO {
     private String email;
     private String crm;
     private Speciality speciality;
+    private boolean active;
 
     public DoctorDTO(){}
 
@@ -16,6 +17,7 @@ public class DoctorDTO {
         this.id = doctor.getId();
         this.crm = doctor.getCrm();
         this.speciality = doctor.getSpeciality();
+        this.active = doctor.isActive();
         if (doctor.getUser() != null) {
             this.name = doctor.getUser().getName();
             this.email = doctor.getUser().getEmail();
@@ -27,4 +29,5 @@ public class DoctorDTO {
     public String getEmail() { return email; }
     public String getCrm() { return crm; }
     public Speciality getSpeciality() { return speciality; }
+    public boolean isActive() { return active; }
 }

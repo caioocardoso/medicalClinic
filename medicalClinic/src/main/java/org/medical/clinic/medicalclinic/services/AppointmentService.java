@@ -121,6 +121,17 @@ public class AppointmentService {
         return appointments.stream().map(AppointmentDTO::new).toList();
     }
 
+    public List<AppointmentDTO> getAppointmentsByDoctorId(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
+
+        if(!doctor.isActive())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inactive doctor has no appointments");
+
+        List<Appointment> appointments = appointmentRepository.findByDoctor(doctor);
+        return appointments.stream().map(AppointmentDTO::new).toList();
+    }
+
     public AppointmentDTO cancel(AppointmentCancellationRequest cancellation) {
         if (cancellation.appointmentId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment ID is required");

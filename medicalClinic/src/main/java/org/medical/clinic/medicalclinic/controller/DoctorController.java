@@ -35,6 +35,12 @@ public class DoctorController {
         return ResponseEntity.ok(doctors);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<DoctorDTO> getDoctorById(@PathVariable Long id) {
+        DoctorDTO doctor = service.getDoctorById(id);
+        return ResponseEntity.ok(doctor);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @Valid @RequestBody DoctorUpdateData updateDoctor) {
         DoctorDTO updated = service.updateDoctor(id, updateDoctor);
@@ -63,6 +69,12 @@ public class DoctorController {
         EmailDto email = new EmailDto(user.getEmail(), "Você solicitou cadastro no nosso sistema!", "Olá " + user.getName() + ", você silicitou cadastro médico no nosso sistema, aguarde algum administrador aceitar a sua solicitação, nós avisaremos você!!");
         emailClient.sendEmail(email);
 
+        return ResponseEntity.status(HttpStatus.CREATED).body(doctorRequestDTO);
+    }
+
+    @PostMapping("/cadastrar-novo")
+    public ResponseEntity<DoctorRequestDTO> registerNewDoctorRequest(@Valid @RequestBody FullDoctorRegistrationDTO data){
+        DoctorRequestDTO doctorRequestDTO = service.registerNewDoctorRequest(data);
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorRequestDTO);
     }
 
