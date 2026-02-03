@@ -8,6 +8,8 @@ import org.medical.clinic.medicalclinic.clients.EmailClient;
 import org.medical.clinic.medicalclinic.clients.EmailDto;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AppointmentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/consulta")
 public class AppointmentController {
+    private static final Logger logger = LoggerFactory.getLogger(AppointmentController.class);
+
     @Autowired
     private AppointmentService service;
     @Autowired
@@ -31,13 +35,20 @@ public class AppointmentController {
     public ResponseEntity<AppointmentDTO> schedule(@AuthenticationPrincipal User user, @RequestBody @Valid AppointmentRequest newAppointment) {
         AppointmentDTO saved = service.schedule(newAppointment);
 
-        EmailDto email = new EmailDto(
-                user.getEmail(),
-                "Consulta Agendada com Sucesso!",
-                "Olá " + user.getName() + ", sua consulta foi agendada com sucesso para o dia " +
-                        saved.dateTime() + "."
-        );
-        emailClient.sendEmail(email);
+        // Tenta enviar email mas não falha o agendamento se o serviço de email estiver indisponível
+        try {
+            EmailDto email = new EmailDto(
+                    user.getEmail(),
+                    "Consulta Agendada com Sucesso!",
+                    "Olá " + user.getName() + ", sua consulta foi agendada com sucesso para o dia " +
+                            saved.dateTime() + "."
+            );
+            emailClient.sendEmail(email);
+            logger.info("Email de confirmação de agendamento enviado para: {}", user.getEmail());
+        } catch (Exception e) {
+            logger.error("Falha ao enviar email de confirmação para {}: {}", user.getEmail(), e.getMessage());
+            // Continua mesmo assim - consulta foi agendada com sucesso
+        }
 
         return ResponseEntity.status(201).body(saved);
     }
@@ -77,11 +88,19 @@ public class AppointmentController {
     public ResponseEntity<AppointmentDTO> cancel(@AuthenticationPrincipal User user, @RequestBody @Valid AppointmentCancellationRequest cancellation) {
         AppointmentDTO appointmentCancelled = service.cancel(cancellation);
 
-        EmailDto email = new EmailDto(
-                user.getEmail(),
-                "Consulta Cancelada com Sucesso!",
-                "Olá, sua consulta marcada para o dia " + appointmentCancelled.dateTime() + " foi cancelada com sucesso."
-        );
+        // Tenta enviar email mas não falha o cancelamento se o serviço de email estiver indisponível
+        try {
+            EmailDto email = new EmailDto(
+                    user.getEmail(),
+                    "Consulta Cancelada com Sucesso!",
+                    "Olá, sua consulta marcada para o dia " + appointmentCancelled.dateTime() + " foi cancelada com sucesso."
+            );
+            emailClient.sendEmail(email);
+            logger.info("Email de confirmação de cancelamento enviado para: {}", user.getEmail());
+        } catch (Exception e) {
+            logger.error("Falha ao enviar email de cancelamento para {}: {}", user.getEmail(), e.getMessage());
+            // Continua mesmo assim - consulta foi cancelada com sucesso
+        }
 
         return ResponseEntity.ok(appointmentCancelled);
     }

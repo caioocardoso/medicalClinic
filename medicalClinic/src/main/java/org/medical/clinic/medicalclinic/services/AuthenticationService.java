@@ -38,9 +38,11 @@ public class AuthenticationService implements UserDetailsService {
 
     @Transactional
     public PatientDTO createNewPatient(PatientSignupRequest data) {
+        if(userRepository.findByEmail(data.userData().getEmail()) != null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
+        }
         User user = createUser(data.userData());
         user.getRoles().add(RoleType.ROLE_PATIENT);
-
         return patientService.createPatientProfile(user, data.patientData());
     }
 

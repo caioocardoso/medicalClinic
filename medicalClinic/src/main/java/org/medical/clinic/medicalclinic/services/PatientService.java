@@ -24,6 +24,12 @@ public class PatientService {
 
     @Transactional
     public PatientDTO createPatientProfile(User user, PatientRegistrationData patientData) {
+        if(repository.existsByUser(user)){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Usuário já é um paciente");
+        }
+        if(repository.existsByCpf(patientData.cpf())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "CPF já cadastrado");
+        }
         Patient patient = new Patient();
         patient.setUser(user);
         patient.setCpf(patientData.cpf());
@@ -76,6 +82,9 @@ public class PatientService {
     public PatientDTO addPatientProfileToExistingUser(User user, String cpf) {
         if (repository.existsByUser(user)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Usuário já é um paciente");
+        }
+        if (repository.existsByCpf(cpf)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cpf já cadastrado");
         }
         user.getRoles().add(RoleType.ROLE_PATIENT);
 
