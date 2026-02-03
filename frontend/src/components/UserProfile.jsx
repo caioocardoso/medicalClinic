@@ -1,51 +1,80 @@
 import React, { useEffect, useState } from 'react';
-import { jwtDecode } from "jwt-decode"; // Precisamos verificar se existe, se não faremos manual
+import api from '../services/api';
+import { useToast } from './Toast';
+import { handleApiError } from '../utils/errorHandler';
 
 const UserProfile = () => {
-    const [user, setUser] = useState({
-        email: '',
-        patientId: '',
-        roles: []
-    });
+    const { showToast } = useToast();
+    const [patient, setPatient] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const pId = localStorage.getItem('patientId');
-        
-        if (token) {
+        const fetchPatientData = async () => {
             try {
-                const decoded = jwtDecode(token);
-                setUser({
-                    email: decoded.sub || '',
-                    roles: decoded.roles || [], // Ajustar conforme payload do token
-                    patientId: pId
-                });
-            } catch (e) {
-                console.error("Erro ao decodificar token", e);
+                const response = await api.get('/paciente/me');
+                setPatient(response.data);
+            } catch (error) {
+                console.error("Erro ao buscar dados do paciente", error);
+                handleApiError(error, showToast);
+            } finally {
+                setLoading(false);
             }
-        }
-    }, []);
+        };
+
+        fetchPatientData();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (loading) return <div>Carregando perfil...</div>;
+    if (!patient) return <div>Erro ao carregar perfil.</div>;
+
+    const address = patient.address || {};
 
     return (
-        <div className="profile-container">
-            <h2>Minhas Informações</h2>
-            <div className="card profile-card">
-                <div className="profile-header">
-                    <div className="profile-avatar">👤</div>
-                    <div>
-                        <h3>Paciente</h3>
-                        <p className="email">{user.email}</p>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <h2 style={{ marginBottom: '2rem', color: 'var(--primary-color)' }}>Minhas Informações</h2>
+            <div className="card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '2px solid #eee' }}>
+                    <div style={{ fontSize: '4rem' }}>👤</div>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--secondary-color)' }}>{patient.name || 'Nome não informado'}</h3>
+                            <span style={{ 
+                                backgroundColor: patient.active ? 'var(--success-color)' : 'var(--error-color)', 
+                                color: 'white', 
+                                padding: '0.25rem 0.75rem', 
+                                borderRadius: '12px', 
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold'
+                            }}>
+                                {patient.active ? 'ATIVO' : 'INATIVO'}
+                            </span>
+                        </div>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{patient.email || 'Email não informado'}</p>
                     </div>
                 </div>
-                <div className="profile-details">
-                    <div className="detail-item">
-                        <label>ID do Paciente:</label>
-                        <span>{user.patientId || 'Não vinculado'}</span>
+                <div style={{ display: 'grid', gap: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                        <label style={{ fontWeight: 'bold', color: 'var(--secondary-color)' }}>CPF:</label>
+                        <span>{patient.cpf}</span>
                     </div>
-                    <div className="detail-item">
-                        <label>Status:</label>
-                        <span className="badge-active">Ativo</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                        <label style={{ fontWeight: 'bold', color: 'var(--secondary-color)' }}>Telefone:</label>
+                        <span>{patient.phone || 'Não informado'}</span>
                     </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                        <label style={{ fontWeight: 'bold', color: 'var(--secondary-color)' }}>Endereço:</label>
+                        <span>
+                            {address.publicPlace && address.number 
+                                ? `${address.publicPlace}, ${address.number} - ${address.neighborhood || ''}, ${address.city || ''} - ${address.uf || ''}` 
+                                : 'Não informado'}
+                        </span>
+                    </div>
+                    {address.zipCode && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                            <label style={{ fontWeight: 'bold', color: 'var(--secondary-color)' }}>CEP:</label>
+                            <span>{address.zipCode}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
