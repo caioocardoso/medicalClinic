@@ -18,6 +18,7 @@ function Register() {
       address: {
         publicPlace: "",
         number: "",
+        complement: "",
         neighborhood: "",
         city: "",
         uf: "",
@@ -35,8 +36,58 @@ function Register() {
     "DERMATOLOGIA"
   ];
 
+  // Funções de formatação
+  const formatCPF = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      return numbers
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    }
+    return value.slice(0, 14); // Limita ao tamanho máximo formatado
+  };
+
+  const formatPhone = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      if (numbers.length <= 10) {
+        // Telefone fixo: (XX) XXXX-XXXX
+        return numbers
+          .replace(/(\d{2})(\d)/, '($1) $2')
+          .replace(/(\d{4})(\d)/, '$1-$2');
+      } else {
+        // Celular: (XX) XXXXX-XXXX
+        return numbers
+          .replace(/(\d{2})(\d)/, '($1) $2')
+          .replace(/(\d{5})(\d)/, '$1-$2');
+      }
+    }
+    return value.slice(0, 15); // Limita ao tamanho máximo formatado
+  };
+
+  const formatCEP = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 8) {
+      return numbers.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+    return value.slice(0, 9); // Limita ao tamanho máximo formatado
+  };
+
   const handleChange = (e, section, field) => {
-    const value = e.target.value;
+    let value = e.target.value;
+    
+    // Aplicar formatação específica
+    if (field === "cpf") {
+      value = formatCPF(value);
+    } else if (field === "phone") {
+      value = formatPhone(value);
+    } else if (field === "zipCode") {
+      value = formatCEP(value);
+    } else if (field === "uf") {
+      value = value.toUpperCase().slice(0, 2);
+    }
+    
     if (section === "address") {
       setFormData(prev => ({
         ...prev,
@@ -139,13 +190,13 @@ function Register() {
               
               <div className="form-group">
                 <label className="form-label">Telefone</label>
-                <input className="form-control" placeholder="(XX) XXXXX-XXXX" onChange={e => handleChange(e, "userData", "phone")} required />
+                <input className="form-control" placeholder="(XX) XXXXX-XXXX" value={formData.userData.phone} onChange={e => handleChange(e, "userData", "phone")} maxLength="15" required />
               </div>
 
               {userType === 'patient' ? (
                   <div className="form-group">
                     <label className="form-label">CPF</label>
-                    <input className="form-control" placeholder="000.000.000-00" onChange={e => handleChange(e, "patientData", "cpf")} required />
+                    <input className="form-control" placeholder="000.000.000-00" value={formData.patientData.cpf} onChange={e => handleChange(e, "patientData", "cpf")} maxLength="14" required />
                   </div>
               ) : (
                   <>
@@ -177,8 +228,13 @@ function Register() {
               
               <div className="form-group">
                   <label className="form-label">Número</label>
-                  <input className="form-control" placeholder="123" onChange={e => handleChange(e, "address", "number")} required />
+                  <input className="form-control" placeholder="123" value={formData.userData.address.number} onChange={e => handleChange(e, "address", "number")} required />
               </div>
+          </div>
+
+          <div className="form-group">
+              <label className="form-label">Complemento</label>
+              <input className="form-control" placeholder="Apto, Bloco, Casa..." value={formData.userData.address.complement} onChange={e => handleChange(e, "address", "complement")} />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
@@ -196,12 +252,12 @@ function Register() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "1rem" }}>
               <div className="form-group">
                   <label className="form-label">UF</label>
-                  <input className="form-control" placeholder="SP" maxLength="2" onChange={e => handleChange(e, "address", "uf")} required />
+                  <input className="form-control" placeholder="SP" value={formData.userData.address.uf} maxLength="2" onChange={e => handleChange(e, "address", "uf")} style={{textTransform: 'uppercase'}} required />
               </div>
               
               <div className="form-group">
                   <label className="form-label">CEP</label>
-                  <input className="form-control" placeholder="00000-000" onChange={e => handleChange(e, "address", "zipCode")} required />
+                  <input className="form-control" placeholder="00000-000" value={formData.userData.address.zipCode} onChange={e => handleChange(e, "address", "zipCode")} maxLength="9" required />
               </div>
           </div>
           
