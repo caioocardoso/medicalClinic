@@ -12,7 +12,6 @@ const DoctorRequests = () => {
     const fetchRequests = async () => {
         try {
             const response = await api.get('/medico/listar-solicitacoes');
-            // The API returns a Page object, so we access .content
             setRequests(response.data.content || []);
         } catch (error) {
             console.error("Erro ao buscar solicitações:", error);
@@ -33,7 +32,6 @@ const DoctorRequests = () => {
                 id: id,
                 isApproved: isApproved
             });
-            // Refresh list after action
             fetchRequests();
             
             const successMessage = response.data.message || 

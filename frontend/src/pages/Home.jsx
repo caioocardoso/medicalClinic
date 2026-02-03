@@ -17,20 +17,17 @@ import { handleApiError } from '../utils/errorHandler';
 import './Home.css';
 
 const Home = () => {
-    // Layout State
     const [activeTab, setActiveTab] = useState('appointments');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Data State
-    const [appointments, setAppointments] = useState([]); // Patient appointments
-    const [doctorAppointments, setDoctorAppointments] = useState([]); // Doctor appointments
-    const [doctors, setDoctors] = useState({}); // Map ID -> Name
-    const [patients, setPatients] = useState({}); // Map ID -> Name (for doctors view)
-    const [doctorList, setDoctorList] = useState([]); // List for dropdown/display
+    const [appointments, setAppointments] = useState([]); 
+    const [doctorAppointments, setDoctorAppointments] = useState([]); 
+    const [doctors, setDoctors] = useState({});
+    const [patients, setPatients] = useState({});
+    const [doctorList, setDoctorList] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [roles, setRoles] = useState([]);
     
-    // Form State
     const [scheduleDate, setScheduleDate] = useState('');
     const [selectedDoctorId, setSelectedDoctorId] = useState('');
     
@@ -45,15 +42,11 @@ const Home = () => {
             return;
         }
         
-        // Parse roles
         try {
             const rolesStr = localStorage.getItem('userRoles');
             const parsedRoles = rolesStr ? JSON.parse(rolesStr) : [];
             setRoles(parsedRoles);
             
-            // Set initial tab based on role if needed, but defaults to 'appointments' (Patient)
-            // If only doctor, switch to doctor-appointments
-            // If admin, switch to admin-requests
             if (parsedRoles.includes('ROLE_ADMIN')) {
                 setActiveTab('admin-requests');
             } else if (parsedRoles.includes('ROLE_DOCTOR') && !parsedRoles.includes('ROLE_PATIENT')) {
@@ -72,8 +65,6 @@ const Home = () => {
             const rolesStr = localStorage.getItem('userRoles');
             const currentRoles = rolesStr ? JSON.parse(rolesStr) : [];
 
-            // 1. Fetch Doctors (Needed for Patient view to schedule/list, and mapping names)
-            // Even doctors might want to see other doctors? Maybe not strictly required but harmless.
             const doctorsResponse = await api.get('/medico');
             const docs = doctorsResponse.data.content || [];
             
@@ -84,22 +75,17 @@ const Home = () => {
             setDoctors(docMap);
             setDoctorList(docs);
 
-            // 2. If Patient, fetch Patient Appointments
             if (currentRoles.includes('ROLE_PATIENT') && patientId) {
                 const appointmentsResponse = await api.get('/consulta/paciente');
                 setAppointments(appointmentsResponse.data);
             }
 
-            // 3. If Doctor, fetch Doctor Appointments and Patients (for mapping)
             if (currentRoles.includes('ROLE_DOCTOR') && doctorId) {
                 const docAppsResponse = await api.get(`/consulta/medico/${doctorId}`);
                 setDoctorAppointments(docAppsResponse.data);
 
-                // Fetch patients to map names
-                // Note: In a real large app, we wouldn't fetch ALL patients. We'd fetch by ID or the endpoint would return names.
-                // For this scope, we'll fetch page 1 (or all if possible) or just show ID if name missing.
                 try {
-                    const patientsResponse = await api.get('/paciente'); // Returns Page
+                    const patientsResponse = await api.get('/paciente');
                     const pats = patientsResponse.data.content || [];
                     const patMap = {};
                     pats.forEach(p => {
@@ -108,7 +94,6 @@ const Home = () => {
                     setPatients(patMap);
                 } catch (err) {
                     console.error("Erro ao buscar pacientes", err);
-                    // Silencioso, não é crítico
                 }
             }
             
@@ -194,12 +179,10 @@ const Home = () => {
         return list.filter(app => app.status === status);
     };
 
-    // Render Content based on activeTab
     const renderContent = () => {
         if (loading) return <div>Carregando...</div>;
 
         switch (activeTab) {
-            // --- PATIENT VIEWS ---
             case 'doctors':
                 return <DoctorsList doctors={doctorList} />;
             case 'profile':
@@ -245,7 +228,6 @@ const Home = () => {
                     </>
                 );
 
-            // --- DOCTOR VIEWS ---
             case 'doctor-profile':
                 return <DoctorProfile />;
             case 'doctor-appointments':
@@ -287,7 +269,6 @@ const Home = () => {
                     </>
                 );
 
-            // --- ADMIN VIEWS ---
             case 'admin-requests':
                 return <DoctorRequests />;
             case 'admin-patients':
@@ -298,13 +279,10 @@ const Home = () => {
                 return <BecomeDoctorForm />;
             case 'become-patient':
                 return <BecomePatientForm onSuccess={(data) => {
-                    // Atualiza os roles do usuário
                     const currentRoles = roles.includes('ROLE_PATIENT') ? roles : [...roles, 'ROLE_PATIENT'];
                     setRoles(currentRoles);
                     localStorage.setItem('userRoles', JSON.stringify(currentRoles));
-                    // Recarrega os dados
                     fetchData();
-                    // Muda para a aba de consultas
                     setActiveTab('appointments');
                 }} />;
 

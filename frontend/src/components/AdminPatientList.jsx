@@ -38,7 +38,6 @@ const AdminPatientList = () => {
             const successMessage = response.data.message || "Paciente inativado com sucesso!";
             showToast(successMessage, "success");
             
-            // Atualizar a lista
             fetchPatients();
         } catch (error) {
             handleApiError(error, showToast);

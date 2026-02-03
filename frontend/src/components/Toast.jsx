@@ -3,9 +3,6 @@ import './Toast.css';
 
 let globalShowToast = null;
 
-/**
- * Hook para usar o sistema de toast globalmente
- */
 export const useToast = () => {
     return {
         showToast: (message, type = 'info') => {
@@ -16,21 +13,16 @@ export const useToast = () => {
     };
 };
 
-/**
- * Componente de Toast para notificações
- */
 const Toast = () => {
     const [toasts, setToasts] = useState([]);
 
     useEffect(() => {
-        // Registra a função global
         globalShowToast = (message, type = 'info') => {
             const id = Date.now();
             const newToast = { id, message, type };
             
             setToasts(prev => [...prev, newToast]);
 
-            // Auto remove após 5 segundos
             setTimeout(() => {
                 removeToast(id);
             }, 5000);

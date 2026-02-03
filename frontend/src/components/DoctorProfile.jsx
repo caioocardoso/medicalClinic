@@ -52,7 +52,7 @@ const DoctorProfile = () => {
         };
 
         fetchDoctorData();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []); 
 
     const handleUpdate = async (e) => {
         e.preventDefault();
@@ -62,7 +62,6 @@ const DoctorProfile = () => {
             const successMessage = response.data.message || "Dados atualizados com sucesso!";
             showToast(successMessage, "success");
             
-            // Atualizar os dados localmente
             setDoctor({ 
                 ...doctor, 
                 name: formData.name,
@@ -88,7 +87,6 @@ const DoctorProfile = () => {
             const successMessage = response.data.message || "Cadastro de médico excluído com sucesso!";
             showToast(successMessage, "success");
             
-            // Fazer logout completo - remove todos os dados
             setTimeout(() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('patientId');

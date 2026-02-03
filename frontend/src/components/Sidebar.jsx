@@ -45,7 +45,6 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, roles = [] }) => {
                             { id: 'appointments', label: 'Minhas Consultas', icon: '📅' },
                             { id: 'doctors', label: 'Médicos Disponíveis', icon: '👨‍⚕️' },
                             { id: 'profile', label: 'Meu Perfil', icon: '👤' },
-                            // Show "Become a Doctor" only if patient is NOT a doctor yet
                             ...(!isDoctor ? [{ id: 'become-doctor', label: 'Virar Médico', icon: '🩺' }] : [])
                         ])}
                     </>

@@ -50,7 +50,7 @@ const UserProfile = () => {
         };
 
         fetchPatientData();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleUpdate = async (e) => {
         e.preventDefault();
@@ -60,7 +60,6 @@ const UserProfile = () => {
             const successMessage = response.data.message || "Dados atualizados com sucesso!";
             showToast(successMessage, "success");
             
-            // Atualizar os dados localmente
             setPatient({ 
                 ...patient, 
                 name: formData.name,

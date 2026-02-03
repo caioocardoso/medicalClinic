@@ -26,16 +26,13 @@ function Login() {
 
       localStorage.setItem("token", token);
       
-      // Decodificar o token para extrair informações do usuário
       try {
           const decoded = jwtDecode(token);
           
-          // Armazenar roles
           if (decoded.roles) {
               localStorage.setItem("userRoles", JSON.stringify(decoded.roles));
           }
 
-          // Armazenar IDs específicos baseado nas roles
           if (decoded.patientId) {
               localStorage.setItem("patientId", decoded.patientId);
           } else {
@@ -54,11 +51,9 @@ function Login() {
           return;
       }
 
-      // Exibir mensagem retornada pela API (se houver) ou mensagem padrão
       const successMessage = response.data.message || "Login realizado com sucesso! Bem-vindo.";
       showToast(successMessage, "success");
       
-      // Pequeno delay para o usuário ver o toast antes de navegar
       setTimeout(() => {
         navigate("/home");
       }, 500);

@@ -11,9 +11,8 @@ function BecomePatientForm({ onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ''); // Remove não-numéricos
+    let value = e.target.value.replace(/\D/g, '');
     
-    // Formata CPF: XXX.XXX.XXX-XX
     if (value.length <= 11) {
       value = value.replace(/(\d{3})(\d)/, '$1.$2');
       value = value.replace(/(\d{3})(\d)/, '$1.$2');
@@ -41,16 +40,13 @@ function BecomePatientForm({ onSuccess }) {
     try {
       const response = await api.post("/paciente/perfil", { cpf: cpfUnformatted });
       
-      // Salva o patientId no localStorage
       if (response.data.id) {
         localStorage.setItem('patientId', response.data.id);
       }
       
-      // Exibir mensagem retornada pela API
       const successMessage = response.data.message || "Cadastro como paciente realizado com sucesso!";
       showToast(successMessage, "success");
       
-      // Chama callback para atualizar o estado do componente pai
       if (onSuccess) {
         onSuccess(response.data);
       }

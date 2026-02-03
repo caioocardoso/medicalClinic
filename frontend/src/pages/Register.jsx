@@ -8,7 +8,7 @@ function Register() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [userType, setUserType] = useState("patient"); // 'patient' or 'doctor'
+  const [userType, setUserType] = useState("patient");
   const [formData, setFormData] = useState({
     userData: {
       name: "",
@@ -26,7 +26,7 @@ function Register() {
       }
     },
     patientData: { cpf: "" },
-    doctorData: { crm: "", speciality: "ORTOPEDIA" } // Default speciality
+    doctorData: { crm: "", speciality: "ORTOPEDIA" }
   });
 
   const specialities = [
@@ -45,25 +45,23 @@ function Register() {
         .replace(/(\d{3})(\d)/, '$1.$2')
         .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
     }
-    return value.slice(0, 14); // Limita ao tamanho máximo formatado
+    return value.slice(0, 14);
   };
 
   const formatPhone = (value) => {
     const numbers = value.replace(/\D/g, '');
     if (numbers.length <= 11) {
       if (numbers.length <= 10) {
-        // Telefone fixo: (XX) XXXX-XXXX
         return numbers
           .replace(/(\d{2})(\d)/, '($1) $2')
           .replace(/(\d{4})(\d)/, '$1-$2');
       } else {
-        // Celular: (XX) XXXXX-XXXX
         return numbers
           .replace(/(\d{2})(\d)/, '($1) $2')
           .replace(/(\d{5})(\d)/, '$1-$2');
       }
     }
-    return value.slice(0, 15); // Limita ao tamanho máximo formatado
+    return value.slice(0, 15);
   };
 
   const formatCEP = (value) => {
@@ -71,13 +69,12 @@ function Register() {
     if (numbers.length <= 8) {
       return numbers.replace(/(\d{5})(\d)/, '$1-$2');
     }
-    return value.slice(0, 9); // Limita ao tamanho máximo formatado
+    return value.slice(0, 9);
   };
 
   const handleChange = (e, section, field) => {
     let value = e.target.value;
     
-    // Aplicar formatação específica
     if (field === "cpf") {
       value = formatCPF(value);
     } else if (field === "phone") {
@@ -109,7 +106,6 @@ function Register() {
     setLoading(true);
     
     try {
-      // Use raw axios to avoid sending Authorization header from interceptor
       const api = axios.create({ baseURL: 'http://localhost:8084/medicalclinic' });
       
       let response;
@@ -127,11 +123,9 @@ function Register() {
         response = await api.post("/medico/cadastrar-novo", payload);
       }
       
-      // Exibir mensagem retornada pela API
       const successMessage = response.data.message || "Cadastro realizado com sucesso!";
       showToast(successMessage, "success");
       
-      // Pequeno delay para o usuário ver o toast antes de navegar
       setTimeout(() => {
         navigate("/");
       }, 1500);
