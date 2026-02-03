@@ -34,19 +34,19 @@ public class DoctorService {
     }
 
     @Transactional
-    public DoctorDTO updateDoctor(Long id, DoctorUpdateData data){
+    public DoctorDTO updateDoctor(Long id, DoctorUpdateData data) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
 
         User user = doctor.getUser();
 
-        if(data.name() != null && !data.name().isBlank()){
+        if (data.name() != null && !data.name().isBlank()) {
             user.setName(data.name());
         }
-        if(data.phone() != null && !data.phone().isBlank()){
+        if (data.phone() != null && !data.phone().isBlank()) {
             user.setPhone(data.phone());
         }
-        if(data.address() != null){
+        if (data.address() != null) {
             user.setAddress(new Address(data.address()));
         }
 
@@ -58,27 +58,38 @@ public class DoctorService {
         return doctorRepository.findAllByActiveTrue(pageable).map(DoctorDTO::new);
     }
 
-    public DoctorDTO getDoctorById(Long id) {
+    public DoctorDTO getDoctorDtoById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
         return new DoctorDTO(doctor);
+    }
+
+    public Doctor getDoctorById(Long id) {
+        return doctorRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
+    }
+
+    public DoctorProfileDTO getDoctorProfileByUserId(Long userId) {
+        Doctor doctor = doctorRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
+        return new DoctorProfileDTO(doctor);
     }
 
     @Transactional
     public DoctorDTO deleteDoctor(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
         doctor.setActive(false);
         doctorRepository.save(doctor);
         return new DoctorDTO(doctor);
     }
 
-    public DoctorRequestDTO saveDoctorRequest (DoctorRequest doctorRequest){
-        if(doctorRequestRepository.existsByUserAndFinishedFalse(doctorRequest.getUser())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "There is already a pending doctor request for this user");
+    public DoctorRequestDTO saveDoctorRequest(DoctorRequest doctorRequest) {
+        if (doctorRequestRepository.existsByUserAndFinishedFalse(doctorRequest.getUser())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe uma solicitação de médico pendente para este usuário");
         }
-        if(doctorRepository.existsByCrm(doctorRequest.getDoctorRegistrationData().crm())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "A doctor with this CRM already exists");
+        if (doctorRepository.existsByCrm(doctorRequest.getDoctorRegistrationData().crm())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um médico com este CRM");
         }
         DoctorRequest savedEntity = doctorRequestRepository.save(doctorRequest);
 
@@ -87,57 +98,49 @@ public class DoctorService {
 
     @Transactional
     public DoctorRequestDTO registerNewDoctorRequest(FullDoctorRegistrationDTO data) {
-        // 1. Check if user already exists
         if (userRepository.findByEmail(data.userData().getEmail()) != null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email já está em uso");
         }
 
-        // 2. Create User
         User newUser = new User();
         newUser.setEmail(data.userData().getEmail());
         newUser.setName(data.userData().getName());
         newUser.setPhone(data.userData().getPhone());
         newUser.setAddress(new Address(data.userData().getAddress()));
         newUser.setPassword(new BCryptPasswordEncoder().encode(data.userData().getPassword()));
-        // Do NOT add ROLE_DOCTOR yet. Roles will be added upon approval.
-        // Maybe add ROLE_PATIENT by default? Or no role?
-        // Let's assume no role or just authenticated user until approved. 
-        // But typically they need to login to see status?
-        // If they have no role, they might not be able to access much.
-        // For now, let's just save the user.
-        
+
         User savedUser = userRepository.save(newUser);
 
-        // 3. Create Doctor Request
         DoctorRequest doctorRequest = new DoctorRequest(savedUser, data.doctorData());
-        
+
         return saveDoctorRequest(doctorRequest);
     }
 
-    public DoctorRequestDTO approveDoctorRequest(ApprovalDoctorRequest approvalData){
+    public DoctorRequestDTO approveDoctorRequest(ApprovalDoctorRequest approvalData) {
         DoctorRequest doctorRequest = doctorRequestRepository.findById(approvalData.id())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor request not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitação de médico não encontrada"));
 
-        if (doctorRequest.isFinished()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Doctor request has already been processed");
-        }
+        if (!approvalData.isApproved())
+            doctorRequest.setAccepted(false);
+        else {
+            if (doctorRequest.isFinished()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Solicitação de médico já foi processada");
+            }
 
-        if(doctorRepository.existsByCrm(doctorRequest.getDoctorRegistrationData().crm())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "A doctor with this CRM already exists");
-        }
+            if (doctorRepository.existsByCrm(doctorRequest.getDoctorRegistrationData().crm())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um médico com este CRM");
+            }
 
-        User user = doctorRequest.getUser();
-
-        if(approvalData.isApproved()){
-            if(user.getRoles().contains(RoleType.ROLE_DOCTOR) || doctorRepository.existsByUser(user)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a doctor");
+            User user = doctorRequest.getUser();
+            if (user.getRoles().contains(RoleType.ROLE_DOCTOR) || doctorRepository.existsByUser(user)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Usuário já é um médico");
             }
 
             createDoctorProfile(user, doctorRequest.getDoctorRegistrationData());
             user.getRoles().add(RoleType.ROLE_DOCTOR);
             userRepository.save(user);
             doctorRequest.setAccepted(true);
-        }else doctorRequest.setAccepted(false);
+        }
 
         doctorRequest.setFinished(true);
         doctorRequestRepository.save(doctorRequest);
@@ -151,10 +154,10 @@ public class DoctorService {
     @Transactional
     public DoctorDTO addDoctorProfileToUserById(Long userId, DoctorRegistrationData data) {
         User targetUser = userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         if (doctorRepository.existsByUser(targetUser)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "User is already a doctor");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Usuário já é um médico");
         }
 
         Doctor doctor = new Doctor();

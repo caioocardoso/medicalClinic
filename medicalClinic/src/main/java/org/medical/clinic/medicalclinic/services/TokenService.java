@@ -54,7 +54,7 @@ public class TokenService {
             
             return builder.sign(algorithm);
         }catch (JWTCreationException e){
-            throw new RuntimeException("Error generating token", e);
+            throw new RuntimeException("Erro ao gerar token", e);
         }
     }
 
@@ -67,7 +67,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         }catch (JWTVerificationException e){
-            return "Invalid token";
+            return "Token inválido";
         }
     }
 

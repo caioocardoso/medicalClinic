@@ -38,24 +38,24 @@ public class AppointmentService {
     public AppointmentDTO schedule(@Valid AppointmentRequest appointment) {
         LocalDateTime dateTime = appointment.dateTime();
         if(dateTime == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "dateTime is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data e hora são obrigatórios");
         if(dateTime.isBefore(LocalDateTime.now().plusMinutes(30)))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointments must be scheduled at least 30 minutes in advance");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas devem ser agendadas com pelo menos 30 minutos de antecedência");
         if(dateTime.getDayOfWeek() == DayOfWeek.SUNDAY)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clinic closed on Sundays");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clínica fechada aos domingos");
         LocalTime localTime = dateTime.toLocalTime();
         if(localTime.isBefore(CLINIC_OPENING_TIME) || localTime.isAfter(CLINIC_CLOSING_TIME))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointments must be between 07:00 and 19:00");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas devem ser agendadas entre 07:00 e 19:00");
 
         Patient patient = patientRepository.findById(appointment.patientId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
         if(!patient.isActive())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot schedule appointment for inactive patient");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar consulta para paciente inativo");
 
         LocalDateTime dayStart = dateTime.toLocalDate().atStartOfDay();
         LocalDateTime dayEnd = dayStart.plusDays(1);
         if (appointmentRepository.existsPatientAppointmentOnDay(patient, dayStart, dayEnd))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Patient already appointment on day");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paciente já possui consulta agendada no dia");
 
         LocalDateTime start = dateTime;
         LocalDateTime end = start.plusHours(1);
@@ -63,18 +63,18 @@ public class AppointmentService {
         Doctor chosenDoctor;
         if (appointment.doctorId() != null) {
             chosenDoctor = doctorRepository.findById(appointment.doctorId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
             if (!chosenDoctor.isActive())
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot schedule appointment for inactive doctor");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar consulta para médico inativo");
             var ignoreStatus = List.of(AppointmentStatus.CANCELLED, AppointmentStatus.COMPLETED);
 
             boolean conflict = appointmentRepository.existsDoctorConflict(chosenDoctor, start, end, ignoreStatus);
             if (conflict)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Doctor is not available at the requested time");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Médico não está disponível no horário solicitado");
         } else {
             Long totalAvailable = doctorRepository.countAvailableDoctors(start, end);
             if (totalAvailable == 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No available doctors at the requested time");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não há médicos disponíveis no horário solicitado");
             }
             int randomIndex = random.nextInt(totalAvailable.intValue());
             Page<Doctor> doctorPage = doctorRepository.findAvailableDoctors(start, end, PageRequest.of(randomIndex, 1));
@@ -93,16 +93,16 @@ public class AppointmentService {
 
     public AppointmentDTO getAppointmentById(Long id) {
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada"));
         return new AppointmentDTO(appointment);
     }
 
     public List<AppointmentDTO> getAppointmentsByUser(User user) {
         Patient patient = patientRepository.findByUser(user)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not identified as a patient."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuário não está identificado como paciente"));
 
         if (!patient.isActive()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Patient profile is inactive");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Perfil do paciente está inativo");
         }
 
         List<Appointment> appointments = appointmentRepository.findByPatient(patient);
@@ -112,10 +112,10 @@ public class AppointmentService {
 
     public List<AppointmentDTO> getAppointmentsByPatientId(Long patientId) {
         Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
 
         if(!patient.isActive())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inactive patient has no appointments");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paciente inativo não possui consultas");
 
         List<Appointment> appointments = appointmentRepository.findByPatient(patient);
         return appointments.stream().map(AppointmentDTO::new).toList();
@@ -123,10 +123,10 @@ public class AppointmentService {
 
     public List<AppointmentDTO> getAppointmentsByDoctorId(Long doctorId) {
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
 
         if(!doctor.isActive())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Inactive doctor has no appointments");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Médico inativo não possui consultas");
 
         List<Appointment> appointments = appointmentRepository.findByDoctor(doctor);
         return appointments.stream().map(AppointmentDTO::new).toList();
@@ -134,21 +134,21 @@ public class AppointmentService {
 
     public void cancel(AppointmentCancellationRequest cancellation) {
         if (cancellation.appointmentId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment ID is required");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID da consulta é obrigatório");
         }
 
         Appointment appointment = appointmentRepository.findById(cancellation.appointmentId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada"));
 
         if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointment is already cancelled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consulta já está cancelada");
         }
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime appointmentTime = appointment.getStartDateTime();
 
         if (now.plusHours(24).isAfter(appointmentTime)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Appointments can only be cancelled with at least 24 hours notice");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas só podem ser canceladas com pelo menos 24 horas de antecedência");
         }
 
         appointment.cancel(cancellation.reason());

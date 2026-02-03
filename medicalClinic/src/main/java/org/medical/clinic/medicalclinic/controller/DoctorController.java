@@ -31,9 +31,15 @@ public class DoctorController {
         return ResponseEntity.ok(doctors);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<DoctorProfileDTO> getMyData(@AuthenticationPrincipal User user) {
+        DoctorProfileDTO doctor = service.getDoctorProfileByUserId(user.getId());
+        return ResponseEntity.ok(doctor);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<DoctorDTO> getDoctorById(@PathVariable Long id) {
-        DoctorDTO doctor = service.getDoctorById(id);
+        DoctorDTO doctor = service.getDoctorDtoById(id);
         return ResponseEntity.ok(doctor);
     }
 

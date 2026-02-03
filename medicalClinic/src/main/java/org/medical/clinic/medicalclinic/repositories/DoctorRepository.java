@@ -19,6 +19,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     boolean existsByUser(User user);
     Optional<Doctor> findByUser(User user);
+    Optional<Doctor> findByUserId(Long userId);
     boolean existsByCrm(String crm);
 
     @Query("""

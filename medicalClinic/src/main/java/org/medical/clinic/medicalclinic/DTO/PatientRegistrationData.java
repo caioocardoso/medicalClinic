@@ -9,7 +9,7 @@ import org.medical.clinic.medicalclinic.models.Speciality;
 
 public record PatientRegistrationData(
         @NotBlank(message = "CPF is required")
-        @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "Invalid CPF format")
+        @Pattern(regexp = "^(?=(?:.*\\d){11}$)[\\d.-]+$", message = "CPF must contain exactly 11 digits")
         String cpf
 ) {
 }

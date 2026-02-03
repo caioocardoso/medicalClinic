@@ -2,9 +2,7 @@ package org.medical.clinic.medicalclinic.controller;
 
 import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.*;
-import org.medical.clinic.medicalclinic.models.Patient;
 import org.medical.clinic.medicalclinic.models.User;
-import org.medical.clinic.medicalclinic.services.DoctorService;
 import org.medical.clinic.medicalclinic.services.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +26,12 @@ public class PatientController {
             @PageableDefault(size = 10, sort = "user.name", direction = Sort.Direction.ASC) Pageable pageable) {
         Page<PatientDTO> patients = service.getAllPatients(pageable);
         return ResponseEntity.ok(patients);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<PatientProfileDTO> getMyData(@AuthenticationPrincipal User user) {
+        PatientProfileDTO patient = service.getPatientProfileByUserId(user.getId());
+        return ResponseEntity.ok(patient);
     }
 
     @PutMapping("/{id}")
