@@ -41,7 +41,7 @@ public class AuthenticationController {
     public ResponseEntity<PatientDTO> registerPatient(@RequestBody @Valid PatientSignupRequest data) {
         PatientDTO savedUser = authenticationService.createNewPatient(data);
 
-        EmailDto email = new EmailDto(data.userData().getEmail(), "Bem-vindo", "Seu cadastro foi realizado!");
+        EmailDto email = new EmailDto(data.userData().getEmail(), "Cadastro realizado com sucesso!", "Olá " + data.userData().getName() + ", seu cadastro foi realizado com sucesso no nosso sistema.!");
         emailClient.sendEmail(email);
 
         return ResponseEntity.ok(savedUser);
@@ -50,6 +50,10 @@ public class AuthenticationController {
     @PostMapping("/register/doctor")
     public ResponseEntity<DoctorDTO> registerDoctor(@RequestBody @Valid DoctorSignupRequest data) {
         DoctorDTO savedUser = authenticationService.createNewDoctor(data);
+
+        EmailDto email = new EmailDto(data.userData().getEmail(), "Cadastro médico realizado com sucesso!", "Olá " + data.userData().getName() + ", seu cadastro como médico foi realizado com sucesso no nosso sistema.!");
+        emailClient.sendEmail(email);
+
         return ResponseEntity.ok(savedUser);
     }
 }

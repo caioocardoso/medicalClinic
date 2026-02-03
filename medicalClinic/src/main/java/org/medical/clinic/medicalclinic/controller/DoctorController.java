@@ -1,6 +1,8 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.clients.EmailClient;
+import org.medical.clinic.medicalclinic.clients.EmailDto;
 import org.medical.clinic.medicalclinic.models.DoctorRequest;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.DoctorService;
@@ -23,6 +25,8 @@ import jakarta.validation.Valid;
 public class DoctorController {
     @Autowired
     DoctorService service;
+    @Autowired
+    private EmailClient emailClient;
 
     @GetMapping
     public ResponseEntity<Page<DoctorDTO>> getAllDoctors(
@@ -40,12 +44,20 @@ public class DoctorController {
     @PutMapping("/{id}")
     public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @Valid @RequestBody DoctorUpdateData updateDoctor) {
         DoctorDTO updated = service.updateDoctor(id, updateDoctor);
+
+        EmailDto email = new EmailDto(updated.getEmail(), "Seu cadastro médico foi atualizado com sucesso!", "Olá " + updated.getName() + ", seus dados médicos foram atualizados com sucesso no nosso sistema.");
+        emailClient.sendEmail(email);
+
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<DoctorDTO> deleteDoctor(@PathVariable Long id){
         DoctorDTO deleted = service.deleteDoctor(id);
+
+        EmailDto email = new EmailDto(deleted.getEmail(), "Seu cadastro de médico foi removido!", "Olá " + deleted.getName() + ", seu cadastro como médico foi excluído com sucesso do nosso sistema. Se foi um engano, entre em contato com o suporte para mais informações.");
+        emailClient.sendEmail(email);
+
         return ResponseEntity.ok(deleted);
     }
 
@@ -53,6 +65,10 @@ public class DoctorController {
     public ResponseEntity<DoctorRequestDTO> registerDoctorRequest(@AuthenticationPrincipal User user, @Valid @RequestBody DoctorRegistrationData doctorRegistrationData){
         DoctorRequest doctorRequest = new DoctorRequest(user, doctorRegistrationData);
         DoctorRequestDTO doctorRequestDTO = service.saveDoctorRequest(doctorRequest);
+
+        EmailDto email = new EmailDto(user.getEmail(), "Você solicitou cadastro no nosso sistema!", "Olá " + user.getName() + ", você silicitou cadastro médico no nosso sistema, aguarde algum administrador aceitar a sua solicitação, nós avisaremos você!!");
+        emailClient.sendEmail(email);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(doctorRequestDTO);
     }
 
@@ -73,6 +89,14 @@ public class DoctorController {
     @PostMapping("/aceitar-cadastro")
     public ResponseEntity<DoctorRequestDTO> approveDoctorRegistration(@RequestBody ApprovalDoctorRequest approvalData){
         DoctorRequestDTO doctorRequestDTO = service.approveDoctorRequest(approvalData);
+
+        EmailDto email;
+        if(approvalData.isApproved())
+            email = new EmailDto(doctorRequestDTO.userDTO().email(), "Sua solicitação médica foi aprovada!", "Olá " + doctorRequestDTO.userDTO().name() + ", parabéns! Sua solicitação de cadastro médico no nosso sistema foi aprovada. Agora você pode realizar o login e começar a utilizar nossos serviços.");
+        else
+            email = new EmailDto(doctorRequestDTO.userDTO().email(), "Houve uma alteração na sua solicitação médica!", "Olá " + doctorRequestDTO.userDTO().name() + ", infelizmente sua solicitação de cadastro médico no nosso sistema foi recusada. Caso queira, você pode tentar novamente realizando uma nova solicitação no nosso sistema.");
+        emailClient.sendEmail(email);
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(doctorRequestDTO);
     }
 
