@@ -4,8 +4,11 @@ import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.AppointmentCancellationRequest;
 import org.medical.clinic.medicalclinic.DTO.AppointmentDTO;
 import org.medical.clinic.medicalclinic.DTO.AppointmentRequest;
+import org.medical.clinic.medicalclinic.clients.EmailClient;
+import org.medical.clinic.medicalclinic.clients.EmailDto;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AppointmentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,15 +22,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/consulta")
 public class AppointmentController {
+    @Autowired
     private AppointmentService service;
-
-    public AppointmentController(AppointmentService service) {
-        this.service = service;
-    }
+    @Autowired
+    private EmailClient emailClient;
 
     @PostMapping
-    public ResponseEntity<AppointmentDTO> schedule(@RequestBody @Valid AppointmentRequest newAppointment) {
+    public ResponseEntity<AppointmentDTO> schedule(@AuthenticationPrincipal User user, @RequestBody @Valid AppointmentRequest newAppointment) {
         AppointmentDTO saved = service.schedule(newAppointment);
+
+        EmailDto email = new EmailDto(
+                user.getEmail(),
+                "Consulta Agendada com Sucesso!",
+                "Olá " + user.getName() + ", sua consulta foi agendada com sucesso para o dia " +
+                        saved.dateTime() + "."
+        );
+        emailClient.sendEmail(email);
+
         return ResponseEntity.status(201).body(saved);
     }
 
@@ -63,8 +74,15 @@ public class AppointmentController {
     }
 
     @DeleteMapping
-    public ResponseEntity cancel(@RequestBody @Valid AppointmentCancellationRequest cancellation) {
-        service.cancel(cancellation);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<AppointmentDTO> cancel(@AuthenticationPrincipal User user, @RequestBody @Valid AppointmentCancellationRequest cancellation) {
+        AppointmentDTO appointmentCancelled = service.cancel(cancellation);
+
+        EmailDto email = new EmailDto(
+                user.getEmail(),
+                "Consulta Cancelada com Sucesso!",
+                "Olá, sua consulta marcada para o dia " + appointmentCancelled.dateTime() + " foi cancelada com sucesso."
+        );
+
+        return ResponseEntity.ok(appointmentCancelled);
     }
 }

@@ -132,7 +132,7 @@ public class AppointmentService {
         return appointments.stream().map(AppointmentDTO::new).toList();
     }
 
-    public void cancel(AppointmentCancellationRequest cancellation) {
+    public AppointmentDTO cancel(AppointmentCancellationRequest cancellation) {
         if (cancellation.appointmentId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID da consulta é obrigatório");
         }
@@ -152,6 +152,6 @@ public class AppointmentService {
         }
 
         appointment.cancel(cancellation.reason());
-        appointmentRepository.save(appointment);
+        return new AppointmentDTO(appointmentRepository.save(appointment));
     }
 }
