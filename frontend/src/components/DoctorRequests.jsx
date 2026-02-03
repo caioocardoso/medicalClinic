@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useToast } from './Toast';
+import { handleApiError } from '../utils/errorHandler';
 
 const DoctorRequests = () => {
+    const { showToast } = useToast();
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState(null);
@@ -13,7 +16,7 @@ const DoctorRequests = () => {
             setRequests(response.data.content || []);
         } catch (error) {
             console.error("Erro ao buscar solicitações:", error);
-            alert("Erro ao carregar solicitações.");
+            handleApiError(error, showToast);
         } finally {
             setLoading(false);
         }
@@ -26,16 +29,19 @@ const DoctorRequests = () => {
     const handleApproval = async (id, isApproved) => {
         setProcessingId(id);
         try {
-            await api.post('/medico/aceitar-cadastro', {
+            const response = await api.post('/medico/aceitar-cadastro', {
                 id: id,
                 isApproved: isApproved
             });
             // Refresh list after action
             fetchRequests();
-            alert(isApproved ? "Médico aprovado com sucesso!" : "Solicitação negada.");
+            
+            const successMessage = response.data.message || 
+                (isApproved ? "Médico aprovado com sucesso!" : "Solicitação negada.");
+            showToast(successMessage, 'success');
         } catch (error) {
             console.error("Erro ao processar solicitação:", error);
-            alert("Erro ao processar solicitação. Tente novamente.");
+            handleApiError(error, showToast);
         } finally {
             setProcessingId(null);
         }

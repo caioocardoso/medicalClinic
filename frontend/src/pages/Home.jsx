@@ -12,6 +12,8 @@ import AdminDoctorList from '../components/AdminDoctorList';
 import BecomeDoctorForm from '../components/BecomeDoctorForm';
 import BecomePatientForm from '../components/BecomePatientForm';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/Toast';
+import { handleApiError } from '../utils/errorHandler';
 import './Home.css';
 
 const Home = () => {
@@ -33,6 +35,7 @@ const Home = () => {
     const [selectedDoctorId, setSelectedDoctorId] = useState('');
     
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const patientId = localStorage.getItem('patientId');
     const doctorId = localStorage.getItem('doctorId');
 
@@ -105,14 +108,17 @@ const Home = () => {
                     setPatients(patMap);
                 } catch (err) {
                     console.error("Erro ao buscar pacientes", err);
+                    // Silencioso, não é crítico
                 }
             }
             
         } catch (err) {
             console.error(err);
             if (err.response && err.response.status === 403) {
-                alert("Sessão expirada ou sem permissão.");
-                navigate('/');
+                showToast("Sessão expirada ou sem permissão. Faça login novamente.", "error");
+                setTimeout(() => navigate('/'), 1500);
+            } else {
+                handleApiError(err, showToast);
             }
         } finally {
             setLoading(false);
@@ -123,14 +129,14 @@ const Home = () => {
         e.preventDefault();
         
         if (!patientId) {
-            alert('Erro: ID do paciente não encontrado. Faça login novamente.');
+            showToast('ID do paciente não encontrado. Faça login novamente.', 'error');
             return;
         }
 
         // Validate year
         const year = parseInt(scheduleDate.split('-')[0]);
         if (year > 9999) {
-             alert('Ano inválido. Por favor insira um ano com 4 dígitos.');
+             showToast('Ano inválido. Por favor insira um ano com 4 dígitos.', 'warning');
              return;
         }
 
@@ -144,8 +150,9 @@ const Home = () => {
                 dateTime: dateTimePayload
             };
             
-            await api.post('/consulta', payload);
-            alert('Consulta agendada com sucesso!');
+            const response = await api.post('/consulta', payload);
+            const successMessage = response.data.message || 'Consulta agendada com sucesso!';
+            showToast(successMessage, 'success');
             
             // Reset and Close
             setScheduleDate('');
@@ -153,8 +160,7 @@ const Home = () => {
             setIsModalOpen(false);
             fetchData(); 
         } catch (err) {
-            console.error(err);
-            alert('Erro ao agendar: ' + (err.response?.data?.message || err.message));
+            handleApiError(err, showToast);
         }
     };
 
@@ -167,12 +173,12 @@ const Home = () => {
                 reason: 'PATIENT_GAVE_UP' // Or generic reason. Doctor canceling technically might send different reason.
             };
             
-            await api.delete('/consulta', { data: payload });
-            alert('Consulta cancelada!');
+            const response = await api.delete('/consulta', { data: payload });
+            const successMessage = response.data.message || 'Consulta cancelada com sucesso!';
+            showToast(successMessage, 'success');
             fetchData();
         } catch (err) {
-            console.error(err);
-            alert('Erro ao cancelar.');
+            handleApiError(err, showToast);
         }
     };
 

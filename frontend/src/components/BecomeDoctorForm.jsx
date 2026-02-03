@@ -1,7 +1,11 @@
 import { useState } from "react";
 import api from "../services/api";
+import { useToast } from "./Toast";
+import { handleApiError } from "../utils/errorHandler";
 
 function BecomeDoctorForm() {
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     crm: "",
     speciality: "ORTOPEDIA"
@@ -23,12 +27,21 @@ function BecomeDoctorForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await api.post("/medico/solicitar-cadastro", formData);
-      alert("Solicitação enviada com sucesso! Aguarde a aprovação.");
+      const response = await api.post("/medico/solicitar-cadastro", formData);
+      const successMessage = response.data.message || "Solicitação enviada com sucesso! Aguarde a aprovação.";
+      showToast(successMessage, "success");
+      
+      // Limpar o formulário após sucesso
+      setFormData({
+        crm: "",
+        speciality: "ORTOPEDIA"
+      });
     } catch (err) {
-      console.error(err);
-      alert("Erro ao enviar solicitação: " + (err.response?.data?.message || err.message));
+      handleApiError(err, showToast);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,8 +80,13 @@ function BecomeDoctorForm() {
             </select>
         </div>
 
-        <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
-            Enviar Solicitação
+        <button 
+          type="submit" 
+          className="btn btn-primary" 
+          style={{ width: '100%', marginTop: '1rem' }}
+          disabled={loading}
+        >
+            {loading ? 'Enviando...' : 'Enviar Solicitação'}
         </button>
       </form>
     </div>

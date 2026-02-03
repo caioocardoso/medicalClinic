@@ -2,17 +2,19 @@ import { useState } from "react";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useToast } from "../components/Toast";
+import { handleApiError } from "../utils/errorHandler";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
+    setLoading(true);
 
     try {
       const response = await api.post("/auth/login", {
@@ -47,14 +49,23 @@ function Login() {
           }
 
       } catch (decodeErr) {
-          console.error("Erro ao processar token:", decodeErr);
+          showToast("Erro ao processar credenciais. Tente novamente.", "error");
+          setLoading(false);
+          return;
       }
 
-      navigate("/home");
+      // Exibir mensagem retornada pela API (se houver) ou mensagem padrão
+      const successMessage = response.data.message || "Login realizado com sucesso! Bem-vindo.";
+      showToast(successMessage, "success");
+      
+      // Pequeno delay para o usuário ver o toast antes de navegar
+      setTimeout(() => {
+        navigate("/home");
+      }, 500);
       
     } catch (err) {
-      console.error(err);
-      setError("Falha no login. Verifique suas credenciais.");
+      handleApiError(err, showToast);
+      setLoading(false);
     }
   };
 
@@ -89,10 +100,13 @@ function Login() {
                 />
             </div>
             
-            {error && <div style={{ color: "var(--error-color)", marginBottom: "1rem", textAlign: "center" }}>{error}</div>}
-            
-            <button type="submit" className="btn btn-primary" style={{ width: "100%", marginBottom: "1rem" }}>
-              Entrar
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              style={{ width: "100%", marginBottom: "1rem" }}
+              disabled={loading}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
             </button>
             
             <button 

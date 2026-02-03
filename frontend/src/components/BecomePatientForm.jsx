@@ -46,7 +46,9 @@ function BecomePatientForm({ onSuccess }) {
         localStorage.setItem('patientId', response.data.id);
       }
       
-      showToast("Cadastro como paciente realizado com sucesso!", "success");
+      // Exibir mensagem retornada pela API
+      const successMessage = response.data.message || "Cadastro como paciente realizado com sucesso!";
+      showToast(successMessage, "success");
       
       // Chama callback para atualizar o estado do componente pai
       if (onSuccess) {

@@ -1,9 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../components/Toast";
+import { handleApiError } from "../utils/errorHandler";
 
 function Register() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState("patient"); // 'patient' or 'doctor'
   const [formData, setFormData] = useState({
     userData: {
@@ -51,29 +55,38 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    
     try {
       // Use raw axios to avoid sending Authorization header from interceptor
       const api = axios.create({ baseURL: 'http://localhost:8084/medicalclinic' });
       
+      let response;
       if (userType === "patient") {
         const payload = {
             userData: formData.userData,
             patientData: formData.patientData
         };
-        await api.post("/auth/register/patient", payload);
-        alert("Cadastro de paciente realizado! Agora você pode fazer login.");
+        response = await api.post("/auth/register/patient", payload);
       } else {
         const payload = {
             userData: formData.userData,
             doctorData: formData.doctorData
         };
-        await api.post("/medico/cadastrar-novo", payload);
-        alert("Solicitação de cadastro de médico realizada! Aguarde aprovação de um administrador.");
+        response = await api.post("/medico/cadastrar-novo", payload);
       }
-      navigate("/");
+      
+      // Exibir mensagem retornada pela API
+      const successMessage = response.data.message || "Cadastro realizado com sucesso!";
+      showToast(successMessage, "success");
+      
+      // Pequeno delay para o usuário ver o toast antes de navegar
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
     } catch (err) {
-      console.error(err);
-      alert("Erro no registro: " + (err.response?.data?.message || err.message));
+      handleApiError(err, showToast);
+      setLoading(false);
     }
   };
 
@@ -193,10 +206,23 @@ function Register() {
           </div>
           
           <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-              <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                {userType === 'patient' ? 'Registrar Paciente' : 'Solicitar Cadastro Médico'}
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                style={{ flex: 1 }}
+                disabled={loading}
+              >
+                {loading ? 'Processando...' : userType === 'patient' ? 'Registrar Paciente' : 'Solicitar Cadastro Médico'}
               </button>
-              <button type="button" onClick={() => navigate("/")} className="btn btn-secondary" style={{ flex: 1, backgroundColor: "#999" }}>Voltar</button>
+              <button 
+                type="button" 
+                onClick={() => navigate("/")} 
+                className="btn btn-secondary" 
+                style={{ flex: 1, backgroundColor: "#999" }}
+                disabled={loading}
+              >
+                Voltar
+              </button>
           </div>
         </form>
       </div>
