@@ -38,21 +38,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/paciente/perfil").authenticated()
                         .requestMatchers(HttpMethod.POST, "/auth/register/patient").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/medico/cadastrar-novo").permitAll()
-
                         .requestMatchers(HttpMethod.POST, "/auth/register/doctor").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/medico/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/paciente/perfil").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/paciente/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/paciente").hasAnyRole("ADMIN", "DOCTOR")
-                        .requestMatchers(HttpMethod.DELETE, "/paciente/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/paciente/**").hasRole("PATIENT")
 
-
+                        .requestMatchers(HttpMethod.POST, "/medico/cadastrar-novo").permitAll()
                         .requestMatchers(HttpMethod.GET, "/medico/**").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.POST, "/medico/**").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.PUT, "/medico/**").hasAnyRole("DOCTOR")
-
-                        .requestMatchers(HttpMethod.PUT, "/paciente/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/medico/**").hasRole("DOCTOR")
 
                         .requestMatchers(HttpMethod.POST, "/consulta").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.DELETE, "/consulta").hasRole("PATIENT")

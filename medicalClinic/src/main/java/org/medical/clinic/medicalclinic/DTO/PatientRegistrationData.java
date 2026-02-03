@@ -1,15 +1,11 @@
 package org.medical.clinic.medicalclinic.DTO;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import org.medical.clinic.medicalclinic.models.Speciality;
 
 public record PatientRegistrationData(
-        @NotBlank(message = "CPF is required")
-        @Pattern(regexp = "^(?=(?:.*\\d){11}$)[\\d.-]+$", message = "CPF must contain exactly 11 digits")
+        @NotBlank(message = "O CPF é obrigatório")
+        @Pattern(regexp = "^(?=(?:.*\\d){11}$)[\\d.-]+$", message = "O CPF deve conter exatamente 11 dígitos")
         String cpf
 ) {
 }

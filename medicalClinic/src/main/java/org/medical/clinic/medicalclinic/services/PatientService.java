@@ -6,6 +6,7 @@ import org.medical.clinic.medicalclinic.models.Patient;
 import org.medical.clinic.medicalclinic.models.RoleType;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.repositories.PatientRepository;
+import org.medical.clinic.medicalclinic.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class PatientService {
     @Autowired
     private PatientRepository repository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
     public PatientDTO createPatientProfile(User user, PatientRegistrationData patientData) {
@@ -50,7 +53,7 @@ public class PatientService {
     }
 
     public Page<PatientDTO> getAllPatients(Pageable pageable) {
-        return repository.findAllByActiveTrue(pageable).map(PatientDTO::new);
+        return repository.findAll(pageable).map(PatientDTO::new);
     }
 
     public PatientProfileDTO getPatientProfileByUserId(Long userId) {
@@ -74,13 +77,13 @@ public class PatientService {
         if (repository.existsByUser(user)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Usuário já é um paciente");
         }
+        user.getRoles().add(RoleType.ROLE_PATIENT);
 
         Patient patient = new Patient();
         patient.setUser(user);
         patient.setCpf(cpf);
 
-        user.getRoles().add(RoleType.ROLE_PATIENT);
-
+        userRepository.save(user);
         Patient saved = repository.save(patient);
         return new PatientDTO(saved);
     }

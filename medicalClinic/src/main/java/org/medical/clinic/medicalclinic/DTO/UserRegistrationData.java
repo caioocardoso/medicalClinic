@@ -8,17 +8,17 @@ import jakarta.validation.constraints.Pattern;
 import org.medical.clinic.medicalclinic.models.Address;
 
 public class UserRegistrationData {
-    @NotBlank(message = "Email is required")
-    @Email
+    @NotBlank(message = "O email é obrigatório")
+    @Email(message = "Email inválido")
     private String email;
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "A senha é obrigatória")
     private String password;
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "O nome é obrigatório")
     private String name;
-    @NotBlank(message = "Phone is required")
-    @Pattern(regexp = "^\\+?[0-9\\s()\\-]{8,20}$", message = "Invalid phone")
+    @NotBlank(message = "O telefone é obrigatório")
+    @Pattern(regexp = "^\\+?[0-9\\s()\\-]{8,20}$", message = "Telefone inválido. Use formato: (11) 98765-4321 ou +55 11 98765-4321")
     private String phone;
-    @NotNull(message = "Address is required")
+    @NotNull(message = "O endereço é obrigatório")
     @Valid
     private Address address;
 

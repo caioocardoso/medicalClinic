@@ -6,19 +6,19 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record AddressRegistrationData(
-        @NotBlank(message = "Street is required")
+        @NotBlank(message = "O logradouro é obrigatório")
         String publicPlace,
-        @NotNull(message = "Number is required")
+        @NotNull(message = "O número é obrigatório")
         Integer number,
         String complement,
-        @NotBlank(message = "Neighborhood is required")
+        @NotBlank(message = "O bairro é obrigatório")
         String neighborhood,
-        @NotBlank(message = "City is required")
+        @NotBlank(message = "A cidade é obrigatória")
         String city,
-        @NotBlank(message = "State (UF) is required")
-        @Size(min = 2, max = 2, message = "State (UF) must have 2 letters")
+        @NotBlank(message = "O estado (UF) é obrigatório")
+        @Size(min = 2, max = 2, message = "O estado (UF) deve ter 2 letras")
         String uf,
-        @NotBlank(message = "CEP is required")
-        @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "Invalid CEP")
+        @NotBlank(message = "O CEP é obrigatório")
+        @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "CEP inválido. Formato esperado: 12345-678 ou 12345678")
         String zipCode
 ) {}

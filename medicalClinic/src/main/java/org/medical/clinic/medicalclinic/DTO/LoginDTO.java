@@ -3,4 +3,10 @@ package org.medical.clinic.medicalclinic.DTO;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginDTO(@NotBlank @Email String email, @NotBlank String password) {}
+public record LoginDTO(
+        @NotBlank(message = "O email é obrigatório")
+        @Email(message = "Email inválido")
+        String email,
+        @NotBlank(message = "A senha é obrigatória")
+        String password
+) {}

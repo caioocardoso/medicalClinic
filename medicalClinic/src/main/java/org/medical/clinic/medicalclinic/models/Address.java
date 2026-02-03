@@ -10,25 +10,25 @@ import org.medical.clinic.medicalclinic.DTO.AddressRegistrationData;
 @Embeddable
 public class Address {
     @Column(name = "public_place", nullable = false)
-    @NotBlank
+    @NotBlank(message = "O campo logradouro é obrigatório.")
     private String publicPlace;
     @Column(name = "number", nullable = false)
-    @NotNull
+    @NotNull(message = "O campo número é obrigatório.")
     private Integer number;
     @Column(name = "complement")
     private String complement;
     @Column(name = "neighborhood", nullable = false)
-    @NotBlank
+    @NotBlank(message = "O campo bairro é obrigatório.")
     private String neighborhood;
     @Column(name = "city", nullable = false)
-    @NotBlank
+    @NotBlank(message = "O campo cidade é obrigatório.")
     private String city;
     @Column(name = "uf", nullable = false, length = 2)
-    @NotBlank
+    @NotBlank(message = "O campo UF é obrigatório.")
     private String uf;
 
     @Column(name = "zip_code", nullable = false)
-    @NotBlank
+    @NotBlank(message = "O campo CEP é obrigatório.")
     private String zipCode;
 
     public Address() {}

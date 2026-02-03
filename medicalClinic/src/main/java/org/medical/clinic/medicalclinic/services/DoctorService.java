@@ -55,7 +55,7 @@ public class DoctorService {
     }
 
     public Page<DoctorDTO> getAllDoctors(Pageable pageable) {
-        return doctorRepository.findAllByActiveTrue(pageable).map(DoctorDTO::new);
+        return doctorRepository.findAll(pageable).map(DoctorDTO::new);
     }
 
     public DoctorDTO getDoctorDtoById(Long id) {
