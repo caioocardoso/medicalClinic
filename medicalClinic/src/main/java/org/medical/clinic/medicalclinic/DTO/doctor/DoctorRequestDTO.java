@@ -1,5 +1,6 @@
-package org.medical.clinic.medicalclinic.DTO;
+package org.medical.clinic.medicalclinic.DTO.doctor;
 
+import org.medical.clinic.medicalclinic.DTO.UserDTO;
 import org.medical.clinic.medicalclinic.models.DoctorRequest;
 
 import java.time.LocalDateTime;

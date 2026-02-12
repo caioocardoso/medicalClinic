@@ -1,4 +1,4 @@
-package org.medical.clinic.medicalclinic.DTO;
+package org.medical.clinic.medicalclinic.DTO.appointment;
 
 import org.medical.clinic.medicalclinic.models.Appointment;
 import org.medical.clinic.medicalclinic.models.AppointmentStatus;

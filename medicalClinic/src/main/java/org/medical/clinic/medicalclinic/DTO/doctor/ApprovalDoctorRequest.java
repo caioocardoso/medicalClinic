@@ -1,4 +1,4 @@
-package org.medical.clinic.medicalclinic.DTO;
+package org.medical.clinic.medicalclinic.DTO.doctor;
 
 import jakarta.validation.constraints.NotNull;
 

@@ -2,7 +2,7 @@ package org.medical.clinic.medicalclinic.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
-import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.doctor.DoctorRegistrationData;
 
 import java.time.LocalDateTime;
 

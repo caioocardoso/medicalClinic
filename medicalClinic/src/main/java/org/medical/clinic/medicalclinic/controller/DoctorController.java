@@ -1,6 +1,6 @@
 package org.medical.clinic.medicalclinic.controller;
 
-import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.DTO.doctor.*;
 import org.medical.clinic.medicalclinic.clients.EmailClient;
 import org.medical.clinic.medicalclinic.clients.EmailDto;
 import org.medical.clinic.medicalclinic.models.DoctorRequest;
@@ -128,14 +128,5 @@ public class DoctorController {
         }
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(doctorRequestDTO);
-    }
-
-    @PostMapping("/{id}/perfil")
-    public ResponseEntity<DoctorDTO> promoteUserToDoctor(
-            @PathVariable Long id,
-            @RequestBody @Valid DoctorRegistrationData data) {
-
-        DoctorDTO doctorDTO = service.addDoctorProfileToUserById(id, data);
-        return ResponseEntity.status(HttpStatus.CREATED).body(doctorDTO);
     }
 }

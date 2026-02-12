@@ -2,8 +2,6 @@ package org.medical.clinic.medicalclinic.models;
 
 import jakarta.persistence.*;
 import jakarta.annotation.Nullable;
-import org.medical.clinic.medicalclinic.DTO.DoctorRegistrationData;
-import org.medical.clinic.medicalclinic.DTO.PatientRegistrationData;
 import org.medical.clinic.medicalclinic.DTO.UserRegistrationData;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

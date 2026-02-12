@@ -1,12 +1,13 @@
 package org.medical.clinic.medicalclinic.services;
 
 import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.DTO.doctor.DoctorDTO;
+import org.medical.clinic.medicalclinic.DTO.doctor.DoctorSignupRequest;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientDTO;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientSignupRequest;
 import org.medical.clinic.medicalclinic.models.*;
-import org.medical.clinic.medicalclinic.repositories.DoctorRepository;
-import org.medical.clinic.medicalclinic.repositories.PatientRepository;
 import org.medical.clinic.medicalclinic.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

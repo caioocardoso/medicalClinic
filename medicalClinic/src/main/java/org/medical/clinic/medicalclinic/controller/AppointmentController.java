@@ -1,9 +1,9 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import jakarta.validation.Valid;
-import org.medical.clinic.medicalclinic.DTO.AppointmentCancellationRequest;
-import org.medical.clinic.medicalclinic.DTO.AppointmentDTO;
-import org.medical.clinic.medicalclinic.DTO.AppointmentRequest;
+import org.medical.clinic.medicalclinic.DTO.appointment.AppointmentCancellationRequest;
+import org.medical.clinic.medicalclinic.DTO.appointment.AppointmentDTO;
+import org.medical.clinic.medicalclinic.DTO.appointment.AppointmentRequest;
 import org.medical.clinic.medicalclinic.clients.EmailClient;
 import org.medical.clinic.medicalclinic.clients.EmailDto;
 import org.medical.clinic.medicalclinic.models.User;

@@ -1,7 +1,9 @@
 package org.medical.clinic.medicalclinic.services;
 
 import jakarta.validation.Valid;
-import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.DTO.appointment.AppointmentCancellationRequest;
+import org.medical.clinic.medicalclinic.DTO.appointment.AppointmentDTO;
+import org.medical.clinic.medicalclinic.DTO.appointment.AppointmentRequest;
 import org.medical.clinic.medicalclinic.models.*;
 import org.medical.clinic.medicalclinic.repositories.AppointmentRepository;
 import org.medical.clinic.medicalclinic.repositories.DoctorRepository;
@@ -37,50 +39,29 @@ public class AppointmentService {
 
     public AppointmentDTO schedule(@Valid AppointmentRequest appointment) {
         LocalDateTime dateTime = appointment.dateTime();
-        if(dateTime == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data e hora são obrigatórios");
-        if(dateTime.isBefore(LocalDateTime.now().plusMinutes(30)))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas devem ser agendadas com pelo menos 30 minutos de antecedência");
-        if(dateTime.getDayOfWeek() == DayOfWeek.SUNDAY)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clínica fechada aos domingos");
-        LocalTime localTime = dateTime.toLocalTime();
-        if(localTime.isBefore(CLINIC_OPENING_TIME) || localTime.isAfter(CLINIC_CLOSING_TIME))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas devem ser agendadas entre 07:00 e 19:00");
+
+        CheckDateTime(dateTime);
 
         Patient patient = patientRepository.findById(appointment.patientId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
+
         if(!patient.isActive())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar consulta para paciente inativo");
 
         LocalDateTime dayStart = dateTime.toLocalDate().atStartOfDay();
         LocalDateTime dayEnd = dayStart.plusDays(1);
+
         if (appointmentRepository.existsPatientAppointmentOnDay(patient, dayStart, dayEnd))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paciente já possui consulta agendada no dia");
 
-        LocalDateTime start = dateTime;
-        LocalDateTime end = start.plusHours(1);
+        LocalDateTime dateTimeStart = dateTime;
+        LocalDateTime dateTimeEnd = dateTimeStart.plusHours(1);
 
         Doctor chosenDoctor;
-        if (appointment.doctorId() != null) {
-            chosenDoctor = doctorRepository.findById(appointment.doctorId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
-            if (!chosenDoctor.isActive())
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar consulta para médico inativo");
-            var ignoreStatus = List.of(AppointmentStatus.CANCELLED, AppointmentStatus.COMPLETED);
-
-            boolean conflict = appointmentRepository.existsDoctorConflict(chosenDoctor, start, end, ignoreStatus);
-            if (conflict)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Médico não está disponível no horário solicitado");
-        } else {
-            Long totalAvailable = doctorRepository.countAvailableDoctors(start, end);
-            if (totalAvailable == 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não há médicos disponíveis no horário solicitado");
-            }
-            int randomIndex = random.nextInt(totalAvailable.intValue());
-            Page<Doctor> doctorPage = doctorRepository.findAvailableDoctors(start, end, PageRequest.of(randomIndex, 1));
-
-            chosenDoctor = doctorPage.getContent().get(0);
-        }
+        if (appointment.doctorId() != null)
+            chosenDoctor = getDoctorIfAvailable(appointment, dateTimeStart, dateTimeEnd);
+        else
+            chosenDoctor = getRandomDoctorIfAvailable(dateTimeStart, dateTimeEnd);
 
         Appointment newAppointment = new Appointment(chosenDoctor, patient, dateTime);
         Appointment saved = appointmentRepository.save(newAppointment);
@@ -153,5 +134,44 @@ public class AppointmentService {
 
         appointment.cancel(cancellation.reason());
         return new AppointmentDTO(appointmentRepository.save(appointment));
+    }
+
+    private Doctor getRandomDoctorIfAvailable(LocalDateTime dateTimeStart, LocalDateTime dateTimeEnd) {
+        Doctor chosenDoctor;
+        Long totalAvailable = doctorRepository.countAvailableDoctors(dateTimeStart, dateTimeEnd);
+        if (totalAvailable == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não há médicos disponíveis no horário solicitado");
+        }
+        int randomIndex = random.nextInt(totalAvailable.intValue());
+        Page<Doctor> doctorPage = doctorRepository.findAvailableDoctors(dateTimeStart, dateTimeEnd, PageRequest.of(randomIndex, 1));
+
+        chosenDoctor = doctorPage.getContent().get(0);
+        return chosenDoctor;
+    }
+
+    private Doctor getDoctorIfAvailable(AppointmentRequest appointment, LocalDateTime dateTimeStart, LocalDateTime dateTimeEnd) {
+        Doctor chosenDoctor;
+        chosenDoctor = doctorRepository.findById(appointment.doctorId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
+        if (!chosenDoctor.isActive())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar consulta para médico inativo");
+        var ignoreStatus = List.of(AppointmentStatus.CANCELLED, AppointmentStatus.COMPLETED);
+
+        boolean conflict = appointmentRepository.existsDoctorConflict(chosenDoctor, dateTimeStart, dateTimeEnd, ignoreStatus);
+        if (conflict)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Médico não está disponível no horário solicitado");
+        return chosenDoctor;
+    }
+
+    private void CheckDateTime(LocalDateTime dateTime) {
+        if(dateTime == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data e hora são obrigatórios");
+        if(dateTime.isBefore(LocalDateTime.now().plusMinutes(30)))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas devem ser agendadas com pelo menos 30 minutos de antecedência");
+        if(dateTime.getDayOfWeek() == DayOfWeek.SUNDAY)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Clínica fechada aos domingos");
+        LocalTime localTime = dateTime.toLocalTime();
+        if(localTime.isBefore(CLINIC_OPENING_TIME) || localTime.isAfter(CLINIC_CLOSING_TIME))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consultas devem ser agendadas entre 07:00 e 19:00");
     }
 }

@@ -1,4 +1,4 @@
-package org.medical.clinic.medicalclinic.DTO;
+package org.medical.clinic.medicalclinic.DTO.patient;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

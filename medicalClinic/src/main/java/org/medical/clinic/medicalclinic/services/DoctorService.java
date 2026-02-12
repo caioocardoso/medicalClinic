@@ -1,7 +1,7 @@
 package org.medical.clinic.medicalclinic.services;
 
 import jakarta.transaction.Transactional;
-import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.DTO.doctor.*;
 import org.medical.clinic.medicalclinic.models.*;
 import org.medical.clinic.medicalclinic.repositories.DoctorRepository;
 import org.medical.clinic.medicalclinic.repositories.DoctorRequestRepository;
@@ -83,7 +83,7 @@ public class DoctorService {
         doctorRepository.save(doctor);
         return new DoctorDTO(doctor);
     }
-
+    @Transactional
     public DoctorRequestDTO saveDoctorRequest(DoctorRequest doctorRequest) {
         if (doctorRequestRepository.existsByUserAndFinishedFalse(doctorRequest.getUser())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe uma solicitação de médico pendente para este usuário");
@@ -116,13 +116,15 @@ public class DoctorService {
         return saveDoctorRequest(doctorRequest);
     }
 
+    @Transactional
     public DoctorRequestDTO approveDoctorRequest(ApprovalDoctorRequest approvalData) {
         DoctorRequest doctorRequest = doctorRequestRepository.findById(approvalData.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitação de médico não encontrada"));
 
-        if (!approvalData.isApproved())
-            doctorRequest.setAccepted(false);
-        else {
+        doctorRequest.setAccepted(false);
+
+        if (approvalData.isApproved())
+        {
             if (doctorRequest.isFinished()) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Solicitação de médico já foi processada");
             }

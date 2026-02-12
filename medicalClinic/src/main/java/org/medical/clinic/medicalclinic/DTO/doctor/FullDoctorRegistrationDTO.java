@@ -1,7 +1,8 @@
-package org.medical.clinic.medicalclinic.DTO;
+package org.medical.clinic.medicalclinic.DTO.doctor;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.medical.clinic.medicalclinic.DTO.UserRegistrationData;
 
 public record FullDoctorRegistrationDTO(
     @NotNull(message = "Os dados do usuário são obrigatórios")

@@ -2,6 +2,8 @@ package org.medical.clinic.medicalclinic.controller;
 
 import jakarta.validation.Valid;
 import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientDTO;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientSignupRequest;
 import org.medical.clinic.medicalclinic.models.User;
 import org.medical.clinic.medicalclinic.services.AuthenticationService;
 import org.medical.clinic.medicalclinic.services.TokenService;
@@ -51,21 +53,6 @@ public class AuthenticationController {
             logger.info("Email de confirmação de cadastro enviado para: {}", data.userData().getEmail());
         } catch (Exception e) {
             logger.error("Falha ao enviar email de cadastro para {}: {}", data.userData().getEmail(), e.getMessage());
-        }
-
-        return ResponseEntity.ok(savedUser);
-    }
-
-    @PostMapping("/register/doctor")
-    public ResponseEntity<DoctorDTO> registerDoctor(@RequestBody @Valid DoctorSignupRequest data) {
-        DoctorDTO savedUser = authenticationService.createNewDoctor(data);
-
-        try {
-            EmailDto email = new EmailDto(data.userData().getEmail(), "Cadastro médico realizado com sucesso!", "Olá " + data.userData().getName() + ", seu cadastro como médico foi realizado com sucesso no nosso sistema.!");
-            emailClient.sendEmail(email);
-            logger.info("Email de confirmação de cadastro médico enviado para: {}", data.userData().getEmail());
-        } catch (Exception e) {
-            logger.error("Falha ao enviar email de cadastro médico para {}: {}", data.userData().getEmail(), e.getMessage());
         }
 
         return ResponseEntity.ok(savedUser);

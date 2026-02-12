@@ -1,7 +1,10 @@
 package org.medical.clinic.medicalclinic.controller;
 
 import jakarta.validation.Valid;
-import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientDTO;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientProfileDTO;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientUpdateData;
 import org.medical.clinic.medicalclinic.clients.EmailClient;
 import org.medical.clinic.medicalclinic.clients.EmailDto;
 import org.medical.clinic.medicalclinic.models.User;

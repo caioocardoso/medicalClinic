@@ -1,4 +1,4 @@
-package org.medical.clinic.medicalclinic.DTO;
+package org.medical.clinic.medicalclinic.DTO.appointment;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;

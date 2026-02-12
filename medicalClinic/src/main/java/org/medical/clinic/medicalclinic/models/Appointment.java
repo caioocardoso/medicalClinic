@@ -1,7 +1,7 @@
 package org.medical.clinic.medicalclinic.models;
 
 import jakarta.persistence.*;
-import org.medical.clinic.medicalclinic.DTO.AppointmentRequest;
+import org.medical.clinic.medicalclinic.DTO.appointment.AppointmentRequest;
 
 import java.time.LocalDateTime;
 

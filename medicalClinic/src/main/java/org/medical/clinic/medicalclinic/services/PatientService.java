@@ -1,6 +1,9 @@
 package org.medical.clinic.medicalclinic.services;
 
-import org.medical.clinic.medicalclinic.DTO.*;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientDTO;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientProfileDTO;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientRegistrationData;
+import org.medical.clinic.medicalclinic.DTO.patient.PatientUpdateData;
 import org.medical.clinic.medicalclinic.models.Address;
 import org.medical.clinic.medicalclinic.models.Patient;
 import org.medical.clinic.medicalclinic.models.RoleType;

@@ -1,4 +1,4 @@
-package org.medical.clinic.medicalclinic.DTO;
+package org.medical.clinic.medicalclinic.DTO.doctor;
 
 import org.medical.clinic.medicalclinic.models.Address;
 import org.medical.clinic.medicalclinic.models.Doctor;
