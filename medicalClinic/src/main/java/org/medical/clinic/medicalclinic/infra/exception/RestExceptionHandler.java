@@ -18,6 +18,16 @@ import java.util.List;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseData> handleGenericException(Exception ex) {
+        var errorData = new ErrorResponseData(
+                "An error occurred",
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value()
+        );
+        return ResponseEntity.status(errorData.status()).body(errorData);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<List<ValidationErrorData>> handleValidationErrors(MethodArgumentNotValidException ex) {
         var errors = ex.getFieldErrors().stream()
@@ -35,50 +45,50 @@ public class RestExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponseData> handleBusinessLogicError(ResponseStatusException ex) {
         var errorData = new ErrorResponseData(
-                "Erro no processamento da solicitação",
+                "Error processing the request",
                 ex.getReason(),
                 ex.getStatusCode().value()
         );
-        return ResponseEntity.status(ex.getStatusCode()).body(errorData);
+        return ResponseEntity.status(errorData.status()).body(errorData);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponseData> handleBadCredentials(BadCredentialsException ex) {
         var errorData = new ErrorResponseData(
-                "Falha na autenticação",
-                "Email ou senha incorretos",
+                "Authentication failed",
+                "Incorrect login or password",
                 HttpStatus.UNAUTHORIZED.value()
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorData);
+        return ResponseEntity.status(errorData.status()).body(errorData);
     }
 
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ErrorResponseData> handleDisabledAccount(DisabledException ex) {
         var errorData = new ErrorResponseData(
-                "Conta desabilitada",
-                "Sua conta está desabilitada. Entre em contato com o suporte.",
+                "Disabled account",
+                "Your account has been disabled. Contact the support ",
                 HttpStatus.UNAUTHORIZED.value()
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorData);
+        return ResponseEntity.status(errorData.status()).body(errorData);
     }
 
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<ErrorResponseData> handleLockedAccount(LockedException ex) {
         var errorData = new ErrorResponseData(
-                "Conta bloqueada",
-                "Sua conta está bloqueada. Entre em contato com o suporte.",
+                "Blocked Account",
+                "Your account is blocked. Please contact support.",
                 HttpStatus.UNAUTHORIZED.value()
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorData);
+        return ResponseEntity.status(errorData.status()).body(errorData);
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponseData> handleAuthenticationException(AuthenticationException ex) {
         var errorData = new ErrorResponseData(
-                "Erro de autenticação",
-                "Não foi possível autenticar. Verifique suas credenciais.",
+                "Authentication error",
+                "Unable to authenticate. Please check your credentials.",
                 HttpStatus.UNAUTHORIZED.value()
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorData);
+        return ResponseEntity.status(errorData.status()).body(errorData);
     }
 }
