@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/consulta/paciente/**").hasRole("DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/consulta").hasRole("DOCTOR")
 
-
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
