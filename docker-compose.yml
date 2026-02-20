@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    build: ./EurekaServer
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - clinic-network
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "-O", "-", "http://localhost:8761/actuator/health" ]
+      interval: 10s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "8081:15672"
+      - "5672:5672"
+    networks:
+      - clinic-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - private-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  medical-clinic-api:
+    build: ./medicalClinic
+    container_name: medical-clinic-api
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      postgres-db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "-O", "-", "http://localhost:8085/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clinic-network
+      - private-network
+
+  email-sender-consumer:
+    build: ./EmailSenderConsumer
+    container_name: email-sender-consumer
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_MAIL_USERNAME=pwebtrabalho@gmail.com
+      - SPRING_MAIL_PASSWORD=aadj qnsk srgu ejqo
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - clinic-network
+
+  email-sender-publisher:
+    build: ./EmailSenderPublisher
+    container_name: email-sender-publisher
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "-O", "-", "http://localhost:8082/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clinic-network
+
+  api-gateway:
+    build: ./Gateway
+    container_name: api-gateway
+    ports:
+      - "8084:8084"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      medical-clinic-api:
+        condition: service_healthy
+      email-sender-publisher:
+          condition: service_healthy
+    networks:
+      - clinic-network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend-app
+    restart: always
+    ports:
+      - "5173:5173"
+    networks:
+      - clinic-network
+
+volumes:
+  postgres-data:
+
+networks:
+  clinic-network:
+    driver: bridge
+  private-network:
+    driver: bridge
